@@ -6,8 +6,6 @@ import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { getTenant, getPageBySlug } from '@/lib/api'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
-import { DebugInfo } from '@/components/DebugInfo'
-import { ApiTester } from '@/components/ApiTester'
 
 /**
  * Contact page
@@ -15,43 +13,18 @@ import { ApiTester } from '@/components/ApiTester'
  */
 export default async function ContactPage() {
   let sections: any[] = []
-  let debugInfo: any = {
-    tenantFound: false,
-    tenantId: null,
-    pageFound: false,
-    pageSlug: null,
-    sectionsCount: 0,
-    error: null,
-  }
 
   try {
     const tenant = await getTenant()
-    debugInfo.tenantFound = !!tenant
-    debugInfo.tenantId = tenant?.id
-    
     if (tenant) {
       const page = await getPageBySlug('contact', tenant.id)
-      debugInfo.pageFound = !!page
-      debugInfo.pageSlug = page?.slug
-      debugInfo.sectionsCount = page?.sections?.length || 0
-      
       if (page) {
         sections = page.sections || []
-        debugInfo.sectionTypes = sections.map(s => s.blockType || s.block_type || s.type)
-        debugInfo.pageData = {
-          id: page.id,
-          slug: page.slug,
-          status: (page as any).status,
-          sectionsLength: page.sections?.length || 0,
-        }
-      } else {
-        debugInfo.error = 'Page not found for slug: contact'
       }
-    } else {
-      debugInfo.error = 'Tenant not found'
     }
   } catch (error) {
-    debugInfo.error = error instanceof Error ? error.message : String(error)
+    // Silently fail and show fallback content
+    console.error('[ContactPage] Error fetching page:', error)
   }
 
   const formSections = sections.filter(s => 
@@ -60,18 +33,6 @@ export default async function ContactPage() {
 
   return (
     <div className="min-h-screen">
-      <ApiTester />
-      <DebugInfo 
-        data={{
-          ...debugInfo,
-          sectionsCount: sections.length,
-          formSectionsCount: formSections.length,
-          sectionTypes: sections.map(s => s.blockType || s.block_type || s.type),
-          formSections: formSections,
-          allSections: sections,
-        }} 
-        label="Contact Page Debug" 
-      />
       <Navigation />
       <PageHeaderGradient
         title="Επικοινωνία"
