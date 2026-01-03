@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { extractParagraphs, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Image Text Section
@@ -29,7 +30,8 @@ export function KallitechniaImageText({
   const safeTitle = title || ''
   // Extract paragraphs from Lexical format if needed
   const safeContent = extractParagraphs(content)
-  const safeImage = image || null
+  // Extract and normalize image URL to absolute URL for Next.js Image component
+  const safeImage = extractImageUrl(image)
   const safeImageAlt = imageAlt || safeTitle
 
   if (!safeTitle && safeContent.length === 0) {

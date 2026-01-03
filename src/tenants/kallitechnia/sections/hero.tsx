@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { extractText, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Hero Section
@@ -28,7 +29,8 @@ export function KallitechniaHero({ title, subtitle, backgroundImage, ctaLabel, c
   // Safe content extraction - extract text from Lexical format if needed
   const safeTitle = extractText(title)
   const safeSubtitle = extractText(subtitle)
-  const safeBackgroundImage = backgroundImage || null
+  // Extract and normalize image URL to absolute URL for Next.js Image component
+  const safeBackgroundImage = extractImageUrl(backgroundImage)
   const safeCtaLabel = ctaLabel || ''
   const safeCtaUrl = ctaUrl || ''
   

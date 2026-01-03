@@ -6,6 +6,7 @@ import { Calendar, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { extractText, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED News Grid Section
@@ -85,7 +86,8 @@ export function KallitechniaNewsGrid({
             const safeItemDate = item.date || ''
             // Extract text from Lexical format if needed
             const safeItemExcerpt = extractText(item.excerpt)
-            const safeItemImage = item.image || null
+            // Extract and normalize image URL to absolute URL for Next.js Image component
+            const safeItemImage = extractImageUrl(item.image)
             const safeItemImageAlt = item.imageAlt || safeItemTitle
             const safeItemReadMoreUrl = item.readMoreUrl || sanitizedButtonUrl
             const sanitizedItemReadMoreUrl =

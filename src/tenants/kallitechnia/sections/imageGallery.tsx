@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { extractText, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Image Gallery Section
@@ -53,11 +54,14 @@ export function KallitechniaImageGallery({ title, subtitle, images }: ImageGalle
             // Extract text from Lexical format if needed
             const safeDescription = extractText(item.description)
 
+            // Extract and normalize image URL to absolute URL for Next.js Image component
+            const normalizedImage = extractImageUrl(safeImage)
+            
             return (
               <div key={index} className="relative h-80 rounded-2xl overflow-hidden group cursor-pointer">
-                {safeImage ? (
+                {normalizedImage ? (
                   <Image
-                    src={safeImage}
+                    src={normalizedImage}
                     alt={safeImageAlt}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"

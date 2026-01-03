@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Sponsors Section
@@ -44,7 +45,8 @@ export function KallitechniaSponsors({ title, subtitle, sponsors }: SponsorsProp
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center max-w-5xl mx-auto">
           {displayItems.map((sponsor, index) => {
-            const safeLogo = sponsor.logo || null
+            // Extract and normalize image URL to absolute URL for Next.js Image component
+            const safeLogo = extractImageUrl(sponsor.logo)
             const safeName = sponsor.name || `Χορηγός ${index + 1}`
 
             return (

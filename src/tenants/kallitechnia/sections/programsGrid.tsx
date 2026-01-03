@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { extractText, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Programs Grid Section
@@ -55,7 +56,8 @@ export function KallitechniaProgramsGrid({ title, subtitle, programs }: Programs
             const safeProgramTitle = program.title || ''
             // Extract text from Lexical format if needed
             const safeProgramDesc = extractText(program.description)
-            const safeProgramImage = program.image || null
+            // Extract and normalize image URL to absolute URL for Next.js Image component
+            const safeProgramImage = extractImageUrl(program.image)
             const safeProgramImageAlt = program.imageAlt || safeProgramTitle
             const safeButtonLabel = program.buttonLabel || 'Μάθετε Περισσότερα'
             const safeButtonUrl = program.buttonUrl || ''

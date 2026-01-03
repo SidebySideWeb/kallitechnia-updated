@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { extractText, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Program Detail Section
@@ -56,12 +57,13 @@ export function KallitechniaProgramDetail({
 }: ProgramDetailProps) {
   // Safe content extraction - layout is locked
   const safeTitle = title || ''
-  const safeImage = image || null
+  // Extract and normalize image URLs to absolute URLs for Next.js Image component
+  const safeImage = extractImageUrl(image)
   // Extract text from Lexical format if needed
   const safeDescription = extractText(description)
   const safeSchedule = Array.isArray(schedule) ? schedule : []
   const safeCoachName = coachName || ''
-  const safeCoachPhoto = coachPhoto || null
+  const safeCoachPhoto = extractImageUrl(coachPhoto)
   const safeCoachStudies = coachStudies || ''
   // Extract text from Lexical format if needed
   const safeCoachBio = extractText(coachBio)
