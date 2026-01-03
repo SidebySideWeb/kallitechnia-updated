@@ -27,7 +27,7 @@ export function KallitechniaSlogan({ text }: SloganProps) {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="bg-gradient-to-r from-primary via-secondary to-accent p-8 rounded-2xl hover:scale-105 transition-transform duration-500 shadow-xl hover:shadow-2xl">
-            <p className="text-xl md:text-2xl font-bold text-white">Σύνθημά του συλλόγου μας είναι:</p>
+            <p className="text-xl md:text-2xl font-bold text-white">Σύνθημα του συλλόγου μας είναι:</p>
             <p className="text-2xl md:text-3xl font-bold text-white mt-4">
               {safeText.split(',').map((part, index, array) => (
                 <span key={index}>
