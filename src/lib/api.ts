@@ -379,9 +379,10 @@ export async function getFormBySlug(slugOrId: string | number): Promise<Form | n
       )
     } else {
       // Try fetching by slug first
+      // Note: We don't filter by status here because tenantAccess already filters active forms for public users
       console.log('[API] Fetching form by slug:', slugOrIdStr)
       response = await fetch(
-        `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrIdStr}&where[and][1][status][equals]=active&limit=1&depth=2&_t=${timestamp}`,
+        `${CMS_API_URL}/api/forms?where[slug][equals]=${slugOrIdStr}&limit=1&depth=2&_t=${timestamp}`,
         {
           cache: 'no-store', // No caching for client components
           headers: {
@@ -414,16 +415,20 @@ export async function getFormBySlug(slugOrId: string | number): Promise<Form | n
 
     if (response.ok) {
       const form: Form = await response.json()
+      console.log('[API] ✅ Form fetched successfully:', form.name || form.slug, 'Fields:', form.fields?.length || 0)
       return form
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`[API] Failed to fetch form (${response.status}): ${response.statusText}`)
-    }
+    // Log detailed error information
+    const errorText = await response.text().catch(() => 'Unable to read error response')
+    console.error(`[API] ❌ Failed to fetch form (${response.status}): ${response.statusText}`)
+    console.error(`[API] Error response:`, errorText)
     return null
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[API] Error fetching form:', error)
+    console.error('[API] ❌ Error fetching form:', error)
+    if (error instanceof Error) {
+      console.error('[API] Error message:', error.message)
+      console.error('[API] Error stack:', error.stack)
     }
     return null
   }
