@@ -2,9 +2,6 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { PageHeaderGradient } from '@/components/PageHeaderGradient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { getTenant, getPageBySlug } from '@/lib/api'
 import SafeSections from '@/lib/SafeSections'
@@ -41,60 +38,34 @@ export default async function ContactPage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Contact Form */}
-            <Card className="border-2 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-3xl text-primary">Στείλτε μας Μήνυμα</CardTitle>
-                <p className="text-muted-foreground">
-                  Συμπληρώστε τη φόρμα και θα επικοινωνήσουμε μαζί σας το συντομότερο δυνατό.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="firstName" className="text-sm font-medium">
-                        Όνομα *
-                      </label>
-                      <Input id="firstName" placeholder="Το όνομά σας" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="lastName" className="text-sm font-medium">
-                        Επώνυμο *
-                      </label>
-                      <Input id="lastName" placeholder="Το επώνυμό σας" required />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium">
-                      Email *
-                    </label>
-                    <Input id="email" type="email" placeholder="email@example.com" required />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium">
-                      Τηλέφωνο
-                    </label>
-                    <Input id="phone" type="tel" placeholder="+30 123 456 7890" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="subject" className="text-sm font-medium">
-                      Θέμα *
-                    </label>
-                    <Input id="subject" placeholder="Πώς μπορούμε να σας βοηθήσουμε;" required />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium">
-                      Μήνυμα *
-                    </label>
-                    <Textarea id="message" placeholder="Γράψτε το μήνυμά σας εδώ..." rows={5} required />
-                  </div>
-                  <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white text-lg">
-                    Αποστολή Μηνύματος
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            {/* Contact Form - Will be rendered from CMS sections if available */}
+            <div className="md:col-span-1">
+              {sections.filter(s => 
+                (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
+              ).length > 0 ? (
+                <PageClient>
+                  <SafeSections
+                    sections={sections.filter(s => 
+                      (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
+                    )}
+                    tenantCode="kallitechnia"
+                    context={{
+                      pageSlug: 'contact',
+                      isHomepage: false,
+                    }}
+                  />
+                </PageClient>
+              ) : (
+                <Card className="border-2 rounded-2xl">
+                  <CardHeader>
+                    <CardTitle className="text-3xl text-primary">Στείλτε μας Μήνυμα</CardTitle>
+                    <p className="text-muted-foreground">
+                      Η φόρμα επικοινωνίας θα εμφανιστεί εδώ όταν ρυθμιστεί στο CMS.
+                    </p>
+                  </CardHeader>
+                </Card>
+              )}
+            </div>
 
             {/* Contact Info */}
             <div className="space-y-6">
@@ -178,11 +149,14 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      {sections.length > 0 ? (
+      {/* Other CMS Sections (non-form blocks) */}
+      {sections.filter(s => (s.blockType || s.block_type || s.type) !== 'kallitechnia.form').length > 0 ? (
         <main>
           <PageClient>
             <SafeSections
-              sections={sections}
+              sections={sections.filter(s => 
+                (s.blockType || s.block_type || s.type) !== 'kallitechnia.form'
+              )}
               tenantCode="kallitechnia"
               context={{
                 pageSlug: 'contact',
