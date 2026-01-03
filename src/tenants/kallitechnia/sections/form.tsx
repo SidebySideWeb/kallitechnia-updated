@@ -134,79 +134,110 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation() // Prevent any event bubbling
+    
+    // Prevent double submission
+    if (isSubmitting) {
+      return
+    }
+
     setErrors({})
     setSubmitStatus({ type: null, message: '' })
     setIsSubmitting(true)
 
-    // Client-side validation
-    const validationErrors: Record<string, string> = {}
-    formData.fields.forEach((field) => {
-      const value = formValues[field.name]
-      if (field.required && (!value || value === '' || (field.type === 'checkbox' && !value))) {
-        validationErrors[field.name] = `${field.label} is required`
-      }
-      if (value && field.type === 'email') {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(value)) {
-          validationErrors[field.name] = `${field.label} must be a valid email`
+    try {
+      // Client-side validation
+      const validationErrors: Record<string, string> = {}
+      formData.fields.forEach((field) => {
+        const value = formValues[field.name]
+        if (field.required) {
+          if (field.type === 'checkbox') {
+            // For checkboxes, value must be true
+            if (value !== true) {
+              validationErrors[field.name] = `${field.label} is required`
+            }
+          } else {
+            // For other fields, check if empty
+            if (!value || value === '') {
+              validationErrors[field.name] = `${field.label} is required`
+            }
+          }
         }
-      }
-    })
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      setIsSubmitting(false)
-      return
-    }
-
-    // Submit form (use form slug from fetched form data)
-    console.log('[Form] Submitting form:', formData.slug, formValues)
-    const result = await submitForm(formData.slug, formValues)
-    console.log('[Form] Submission result:', result)
-
-    if (result.success) {
-      setSubmitStatus({
-        type: 'success',
-        message: result.message || 'Thank you! Your submission has been received.',
+        if (value && field.type === 'email') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          if (!emailRegex.test(value)) {
+            validationErrors[field.name] = `${field.label} must be a valid email`
+          }
+        }
       })
 
-      // Redirect if URL provided
-      if (result.redirectUrl) {
-        const redirectUrl = result.redirectUrl
-        setTimeout(() => {
-          if (redirectUrl.startsWith('http')) {
-            window.location.href = redirectUrl
-          } else {
-            router.push(redirectUrl)
-          }
-        }, 2000)
-      } else {
-        // Auto-reset form after 10 seconds (user can use button for immediate reset)
-        setTimeout(() => {
-          const initialValues: Record<string, any> = {}
-          formData.fields.forEach((field) => {
-            if (field.type === 'checkbox') {
-              initialValues[field.name] = false
-            } else {
-              initialValues[field.name] = ''
-            }
-          })
-          setFormValues(initialValues)
-          setSubmitStatus({ type: null, message: '' })
-          setErrors({})
-        }, 10000)
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors)
+        setIsSubmitting(false)
+        return
       }
-    } else {
+
+      // Submit form (use form slug from fetched form data)
+      console.log('[Form] Submitting form:', formData.slug, formValues)
+      const result = await submitForm(formData.slug, formValues)
+      console.log('[Form] Submission result:', result)
+
+      if (result.success) {
+        setSubmitStatus({
+          type: 'success',
+          message: result.message || 'Thank you! Your submission has been received.',
+        })
+
+        // Scroll to top to show success message
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+
+        // Redirect if URL provided
+        if (result.redirectUrl) {
+          const redirectUrl = result.redirectUrl
+          setTimeout(() => {
+            if (redirectUrl.startsWith('http')) {
+              window.location.href = redirectUrl
+            } else {
+              router.push(redirectUrl)
+            }
+          }, 2000)
+        } else {
+          // Auto-reset form after 10 seconds (user can use button for immediate reset)
+          setTimeout(() => {
+            const initialValues: Record<string, any> = {}
+            formData.fields.forEach((field) => {
+              if (field.type === 'checkbox') {
+                initialValues[field.name] = false
+              } else {
+                initialValues[field.name] = ''
+              }
+            })
+            setFormValues(initialValues)
+            setSubmitStatus({ type: null, message: '' })
+            setErrors({})
+          }, 10000)
+        }
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: result.message || 'Failed to submit form. Please try again.',
+        })
+        if (result.errors) {
+          setErrors(result.errors)
+        }
+        // Scroll to top to show error message
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } catch (error) {
+      console.error('[Form] Unexpected error during submission:', error)
       setSubmitStatus({
         type: 'error',
-        message: result.message || 'Failed to submit form. Please try again.',
+        message: 'An unexpected error occurred. Please try again.',
       })
-      if (result.errors) {
-        setErrors(result.errors)
-      }
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    setIsSubmitting(false)
   }
 
   const renderField = (field: Form['fields'][0]) => {
@@ -392,7 +423,7 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
 
           {/* Form - Hide on success (unless redirecting) */}
           {submitStatus.type !== 'success' && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               {formData.fields.map((field) => renderField(field))}
               <Button
                 type="submit"
