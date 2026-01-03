@@ -6,6 +6,7 @@ import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { getTenant, getPageBySlug } from '@/lib/api'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
+import { DebugInfo } from '@/components/DebugInfo'
 
 /**
  * Contact page
@@ -50,8 +51,22 @@ export default async function ContactPage() {
     console.error('[ContactPage] ❌ Failed to fetch CMS data:', error)
   }
 
+  const formSections = sections.filter(s => 
+    (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
+  )
+
   return (
     <div className="min-h-screen">
+      <DebugInfo 
+        data={{
+          sectionsCount: sections.length,
+          formSectionsCount: formSections.length,
+          sectionTypes: sections.map(s => s.blockType || s.block_type || s.type),
+          formSections: formSections,
+          allSections: sections,
+        }} 
+        label="Contact Page Debug" 
+      />
       <Navigation />
       <PageHeaderGradient
         title="Επικοινωνία"
