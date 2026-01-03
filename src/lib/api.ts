@@ -153,6 +153,28 @@ export async function getPageBySlug(
       pageId: data.docs[0]?.id,
     })
     
+    // If page not found, try to list all pages for this tenant to help debug
+    if (data.docs.length === 0) {
+      console.warn(`[API] Page with slug "${slug}" not found. Fetching all pages for tenant ${tenantId}...`)
+      try {
+        const allPagesUrl = `${CMS_API_URL}/api/pages?where[tenant][equals]=${tenantId}&limit=50&depth=0`
+        const allPagesResponse = await fetch(allPagesUrl, { cache: 'no-store' })
+        if (allPagesResponse.ok) {
+          const allPagesData: CMSResponse<Page> = await allPagesResponse.json()
+          console.warn(`[API] Available pages for tenant ${tenantId}:`, 
+            allPagesData.docs.map(p => ({ 
+              id: p.id, 
+              slug: p.slug, 
+              status: (p as any).status,
+              title: (p as any).title || 'Untitled'
+            }))
+          )
+        }
+      } catch (e) {
+        console.warn('[API] Could not fetch all pages for debugging:', e)
+      }
+    }
+    
     return data.docs[0] || null
   } catch (error) {
     console.error('[API] Error fetching page:', error)
