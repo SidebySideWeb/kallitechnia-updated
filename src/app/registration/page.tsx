@@ -2,22 +2,30 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { PageHeaderGradient } from '@/components/PageHeaderGradient'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { MapPin, Phone, Mail, Clock, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
+import { getTenant, getPageBySlug } from '@/lib/api'
+import SafeSections from '@/lib/SafeSections'
+import PageClient from '../PageClient'
 
 /**
  * Registration page
- * Inner page - uses PageHeaderGradient (NOT hero block)
- * 
- * EXACT copy from v0.app structure
+ * Can fetch from CMS or use static content
  */
-export default function RegistrationPage() {
+export default async function RegistrationPage() {
+  let sections: any[] = []
+
+  try {
+    const tenant = await getTenant()
+    if (tenant) {
+      const page = await getPageBySlug('registration', tenant.id)
+      if (page) {
+        sections = page.sections || []
+      }
+    }
+  } catch (error) {
+    console.warn('[RegistrationPage] Failed to fetch CMS data:', error)
+  }
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -147,124 +155,31 @@ export default function RegistrationPage() {
         </div>
       </section>
 
-      {/* Registration Form */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-border">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-8 text-center">Φόρμα Εγγραφής</h2>
-
-              <form className="space-y-6">
-                {/* Child's First Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="childFirstName" className="text-base font-semibold">
-                    Όνομα Παιδιού *
-                  </Label>
-                  <Input id="childFirstName" placeholder="Εισάγετε το όνομα του παιδιού" required className="h-12" />
-                </div>
-
-                {/* Child's Last Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="childLastName" className="text-base font-semibold">
-                    Επώνυμο *
-                  </Label>
-                  <Input id="childLastName" placeholder="Εισάγετε το επώνυμο του παιδιού" required className="h-12" />
-                </div>
-
-                {/* Age */}
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="text-base font-semibold">
-                    Ηλικία *
-                  </Label>
-                  <Input id="age" type="number" placeholder="Εισάγετε την ηλικία" required className="h-12" />
-                </div>
-
-                {/* Parent's Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="parentName" className="text-base font-semibold">
-                    Όνομα Γονέα *
-                  </Label>
-                  <Input id="parentName" placeholder="Εισάγετε το όνομα του γονέα" required className="h-12" />
-                </div>
-
-                {/* Phone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-base font-semibold">
-                    Τηλέφωνο *
-                  </Label>
-                  <Input id="phone" type="tel" placeholder="+30 123 456 7890" required className="h-12" />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-base font-semibold">
-                    Email *
-                  </Label>
-                  <Input id="email" type="email" placeholder="email@example.com" required className="h-12" />
-                </div>
-
-                {/* Department Selection */}
-                <div className="space-y-2">
-                  <Label htmlFor="department" className="text-base font-semibold">
-                    Επιλογή Τμήματος *
-                  </Label>
-                  <Select required>
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Επιλέξτε τμήμα" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="artistic">Καλλιτεχνική Γυμναστική</SelectItem>
-                      <SelectItem value="rhythmic">Ρυθμική Γυμναστική</SelectItem>
-                      <SelectItem value="precompetitive">Προαγωνιστικά Τμήματα</SelectItem>
-                      <SelectItem value="children">Παιδικά Τμήματα</SelectItem>
-                      <SelectItem value="gfa">Γυμναστική για Όλους</SelectItem>
-                      <SelectItem value="adults">Adults Group GfA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Message */}
-                <div className="space-y-2">
-                  <Label htmlFor="message" className="text-base font-semibold">
-                    Μήνυμα
-                  </Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Πείτε μας περισσότερα για το παιδί σας ή τυχόν ερωτήσεις..."
-                    rows={5}
-                    className="resize-none"
-                  />
-                </div>
-
-                {/* Terms Checkbox */}
-                <div className="flex items-start gap-3 pt-4">
-                  <Checkbox id="terms" required className="mt-1" />
-                  <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
-                    Αποδέχομαι τους{' '}
-                    <Link href="/terms" className="text-accent hover:underline font-semibold">
-                      Όρους Χρήσης
-                    </Link>{' '}
-                    και την{' '}
-                    <Link href="/terms" className="text-accent hover:underline font-semibold">
-                      Πολιτική Απορρήτου
-                    </Link>
-                    . Συμφωνώ με την επεξεργασία των προσωπικών μου δεδομένων σύμφωνα με τον GDPR.
-                  </Label>
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full h-14 text-lg font-bold bg-secondary hover:bg-secondary/90"
-                >
-                  Υποβολή Εγγραφής
-                </Button>
-              </form>
+      {/* CMS Sections (includes form if configured) */}
+      {sections.length > 0 ? (
+        <main>
+          <PageClient>
+            <SafeSections
+              sections={sections}
+              tenantCode="kallitechnia"
+              context={{
+                pageSlug: 'registration',
+                isHomepage: false,
+              }}
+            />
+          </PageClient>
+        </main>
+      ) : (
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="text-lg text-muted-foreground">
+                Η φόρμα εγγραφής θα εμφανιστεί εδώ όταν ρυθμιστεί στο CMS.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Banner */}
       <section className="py-20 bg-gradient-to-r from-primary via-secondary to-accent">
