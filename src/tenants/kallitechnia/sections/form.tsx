@@ -41,20 +41,51 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     message: string
   }>({ type: null, message: '' })
 
-  // Extract form - can be: string (ID), object with slug/id, or already populated form object
+  // Debug: Log ALL props received
+  console.log('[Form] Component received ALL props:', { 
+    form, 
+    formType: typeof form,
+    title, 
+    description,
+    formIsObject: form && typeof form === 'object',
+    formKeys: form && typeof form === 'object' ? Object.keys(form) : null,
+    formValue: form && typeof form === 'object' ? JSON.stringify(form, null, 2).substring(0, 500) : form
+  })
+
+  // Extract form - can be: string (ID), relationship object {id, slug}, or already populated form object
   const formSlugOrId =
     typeof form === 'string'
       ? form
       : form && typeof form === 'object'
-        ? (form as any).slug || (form as any).id || (form as any)._id || null
+        ? (form as any).slug || 
+          (form as any).id || 
+          (form as any)._id || 
+          (form as any).form?.slug || // Nested form relationship
+          (form as any).form?.id ||   // Nested form relationship
+          (form as any).form?._id ||  // Nested form relationship
+          null
         : null
 
+  console.log('[Form] Extracted formSlugOrId:', formSlugOrId)
+  
+  // Also check if form prop itself is a relationship object that needs to be extracted
+  const actualFormObject = form && typeof form === 'object' && 'form' in form 
+    ? (form as any).form 
+    : form
+
   // Check if form is already populated with fields (from CMS depth=2)
+  // Check both form prop and nested form.form
   const isFormPopulated =
-    form &&
-    typeof form === 'object' &&
-    'fields' in form &&
-    Array.isArray((form as any).fields)
+    (actualFormObject &&
+      typeof actualFormObject === 'object' &&
+      'fields' in actualFormObject &&
+      Array.isArray((actualFormObject as any).fields)) ||
+    (form &&
+      typeof form === 'object' &&
+      'fields' in form &&
+      Array.isArray((form as any).fields))
+
+  console.log('[Form] isFormPopulated:', isFormPopulated, 'actualFormObject:', actualFormObject)
 
   // Always fetch form data from API to ensure fresh data (ignore populated form to avoid stale cache)
   useEffect(() => {
@@ -113,7 +144,7 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
         console.error('[Form] Error fetching form:', error)
         // Fallback to populated form on error
         if (isFormPopulated) {
-          const populatedForm = form as any
+          const populatedForm = (actualFormObject || form) as any
           if (populatedForm.status === 'active') {
             console.log('[Form] Using populated form as fallback after error')
             setFormData({
@@ -140,10 +171,20 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     }
 
     fetchForm()
-  }, [formSlugOrId, isFormPopulated, form])
+  }, [formSlugOrId, isFormPopulated, form, actualFormObject])
 
   if (!formData) {
-    return null
+    console.log('[Form] No formData yet, showing loading state or nothing')
+    // Don't return null immediately - show a loading state or wait for fetch
+    return (
+      <section className="py-20 bg-background fade-in-section opacity-0">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="text-muted-foreground">Loading form...</p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   const safeTitle = title || formData.name || ''
