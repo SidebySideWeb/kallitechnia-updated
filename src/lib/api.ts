@@ -57,28 +57,33 @@ interface Post {
  * Fetch tenant by code
  */
 export async function getTenant(code: string = TENANT_CODE): Promise<Tenant | null> {
+  const apiUrl = `${CMS_API_URL}/api/tenants?where[code][equals]=${code}&limit=1&depth=0`
+  
   try {
-    const response = await fetch(
-      `${CMS_API_URL}/api/tenants?where[code][equals]=${code}&limit=1&depth=0`,
-      {
-        next: { revalidate: 3600 }, // Revalidate every hour
-      }
-    )
+    console.log(`[API] Fetching tenant from: ${apiUrl}`)
+    console.log(`[API] CMS_API_URL: ${CMS_API_URL}`)
+    
+    const response = await fetch(apiUrl, {
+      next: { revalidate: 3600 }, // Revalidate every hour
+    })
+
+    console.log(`[API] Tenant response status: ${response.status} ${response.statusText}`)
 
     if (!response.ok) {
-      // Don't throw error, just return null to allow fallback
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`[API] Failed to fetch tenant (${response.status}): ${response.statusText}`)
-      }
+      const errorText = await response.text().catch(() => 'Unable to read error response')
+      console.error(`[API] Failed to fetch tenant (${response.status}): ${response.statusText}`)
+      console.error(`[API] Error response: ${errorText}`)
       return null
     }
 
     const data: CMSResponse<Tenant> = await response.json()
+    console.log(`[API] Tenant data received:`, data.docs.length > 0 ? 'Found tenant' : 'No tenant found')
     return data.docs[0] || null
   } catch (error) {
-    // Don't log errors in production to avoid noise
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[API] Error fetching tenant:', error)
+    console.error('[API] Error fetching tenant:', error)
+    if (error instanceof Error) {
+      console.error('[API] Error message:', error.message)
+      console.error('[API] Error stack:', error.stack)
     }
     return null
   }

@@ -16,15 +16,19 @@ export default async function AboutPage() {
 
   try {
     const tenant = await getTenant()
-    if (tenant) {
+    if (!tenant) {
+      console.error('[AboutPage] Tenant not found. CMS URL:', process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.ftiaxesite.gr')
+    } else {
       const page = await getPageBySlug('about', tenant.id)
-      if (page) {
+      if (!page) {
+        console.warn('[AboutPage] Page "about" not found for tenant:', tenant.id)
+      } else {
         pageTitle = page.title || pageTitle
         sections = page.sections || []
       }
     }
   } catch (error) {
-    console.warn('[AboutPage] Failed to fetch CMS data:', error)
+    console.error('[AboutPage] Failed to fetch CMS data:', error)
   }
 
   return (
