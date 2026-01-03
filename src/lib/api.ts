@@ -286,12 +286,18 @@ export interface Form {
  */
 export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
   try {
+    // Add timestamp to bust cache (for client-side calls)
+    const timestamp = Date.now()
+    
     // Try fetching by slug first
     let response = await fetch(
-      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=2`,
+      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=2&_t=${timestamp}`,
       {
-        next: { revalidate: 0 }, // Always fetch fresh data (no cache)
-        cache: 'no-store', // Ensure no caching
+        cache: 'no-store', // No caching for client components
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       }
     )
 
@@ -304,10 +310,13 @@ export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
 
     // If not found by slug, try fetching by ID
     response = await fetch(
-      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=2`,
+      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=2&_t=${timestamp}`,
       {
-        next: { revalidate: 0 }, // Always fetch fresh data (no cache)
-        cache: 'no-store', // Ensure no caching
+        cache: 'no-store', // No caching for client components
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       }
     )
 

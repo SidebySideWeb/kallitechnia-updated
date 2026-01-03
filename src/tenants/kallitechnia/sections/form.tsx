@@ -63,11 +63,13 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     }
 
     // Always fetch fresh form data from API (even if populated, to get latest labels/changes)
-    console.log('[Form] Fetching fresh form data:', formSlugOrId)
-    getFormBySlug(formSlugOrId)
-      .then((fetchedForm) => {
+    const fetchForm = async () => {
+      console.log('[Form] Fetching fresh form data:', formSlugOrId, 'at', new Date().toISOString())
+      try {
+        const fetchedForm = await getFormBySlug(formSlugOrId)
         if (fetchedForm) {
           console.log('[Form] Form data fetched:', fetchedForm.name, 'Fields:', fetchedForm.fields.length)
+          console.log('[Form] Field labels:', fetchedForm.fields.map(f => f.label))
           setFormData(fetchedForm)
           // Initialize form values
           const initialValues: Record<string, any> = {}
@@ -107,8 +109,7 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
             }
           }
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('[Form] Error fetching form:', error)
         // Fallback to populated form on error
         if (isFormPopulated) {
@@ -135,7 +136,10 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
             setFormValues(initialValues)
           }
         }
-      })
+      }
+    }
+
+    fetchForm()
   }, [formSlugOrId, isFormPopulated, form])
 
   if (!formData) {
