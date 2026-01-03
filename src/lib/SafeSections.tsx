@@ -18,6 +18,7 @@ import {
   KallitechniaSlogan,
   KallitechniaImageText,
   KallitechniaProgramDetail,
+  KallitechniaForm,
 } from '@/tenants/kallitechnia/sections'
 
 interface SafeSectionsProps {
@@ -44,6 +45,7 @@ const BLOCK_REGISTRY: Record<string, React.ComponentType<any>> = {
   'kallitechnia.slogan': KallitechniaSlogan,
   'kallitechnia.imageText': KallitechniaImageText,
   'kallitechnia.programDetail': KallitechniaProgramDetail,
+  'kallitechnia.form': KallitechniaForm,
 }
 
 // Track logged warnings per request (dev only)

@@ -16,4 +16,5 @@ export { KallitechniaQuote } from './quote'
 export { KallitechniaSlogan } from './slogan'
 export { KallitechniaImageText } from './imageText'
 export { KallitechniaProgramDetail } from './programDetail'
+export { KallitechniaForm } from './form'
 

@@ -260,3 +260,107 @@ export async function getHomepageData() {
     sections: homepage.sections || [],
   }
 }
+
+export interface FormField {
+  type: 'text' | 'email' | 'tel' | 'textarea' | 'number' | 'select' | 'checkbox'
+  label: string
+  name: string
+  required: boolean
+  placeholder?: string
+  options?: Array<{ label: string; value: string }>
+}
+
+export interface Form {
+  id: string
+  name: string
+  slug: string
+  fields: FormField[]
+  successMessage?: string
+  redirectUrl?: string
+  status: 'active' | 'inactive'
+}
+
+/**
+ * Fetch form by slug or ID
+ */
+export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
+  try {
+    // Try fetching by slug first
+    let response = await fetch(
+      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=0`,
+      {
+        next: { revalidate: 300 }, // Revalidate every 5 minutes
+      }
+    )
+
+    if (response.ok) {
+      const data: CMSResponse<Form> = await response.json()
+      if (data.docs.length > 0) {
+        return data.docs[0]
+      }
+    }
+
+    // If not found by slug, try fetching by ID
+    response = await fetch(
+      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=0`,
+      {
+        next: { revalidate: 300 },
+      }
+    )
+
+    if (response.ok) {
+      const form: Form = await response.json()
+      return form
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[API] Failed to fetch form (${response.status}): ${response.statusText}`)
+    }
+    return null
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[API] Error fetching form:', error)
+    }
+    return null
+  }
+}
+
+/**
+ * Submit form data
+ */
+export async function submitForm(
+  formSlug: string,
+  data: Record<string, any>
+): Promise<{ success: boolean; message?: string; redirectUrl?: string; errors?: Record<string, string> }> {
+  try {
+    const response = await fetch(`${CMS_API_URL}/api/forms/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ formSlug, data }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: result.error || 'Failed to submit form',
+        errors: result.errors,
+      }
+    }
+
+    return {
+      success: true,
+      message: result.message,
+      redirectUrl: result.redirectUrl,
+    }
+  } catch (error) {
+    console.error('[API] Error submitting form:', error)
+    return {
+      success: false,
+      message: 'An error occurred while submitting the form. Please try again.',
+    }
+  }
+}
