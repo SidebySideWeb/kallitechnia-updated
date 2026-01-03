@@ -145,17 +145,47 @@ export async function getPageBySlug(
       return null
     }
 
-    const data: CMSResponse<Page> = await response.json()
+    const rawResponse = await response.text()
+    console.log(`[API] Raw API response:`, rawResponse.substring(0, 500))
+    
+    let data: CMSResponse<Page>
+    try {
+      data = JSON.parse(rawResponse)
+    } catch (e) {
+      console.error('[API] Failed to parse JSON response:', e)
+      console.error('[API] Raw response:', rawResponse)
+      return null
+    }
+    
     console.log(`[API] Page data received:`, {
-      found: data.docs.length > 0,
+      totalDocs: data.totalDocs,
+      docsLength: data.docs?.length || 0,
+      found: data.docs && data.docs.length > 0,
       pageSlug: data.docs[0]?.slug,
       sectionsCount: data.docs[0]?.sections?.length || 0,
       pageId: data.docs[0]?.id,
+      pageStatus: (data.docs[0] as any)?.status,
     })
     
-    // If page not found, try to list all pages for this tenant to help debug
-    if (data.docs.length === 0) {
-      console.warn(`[API] Page with slug "${slug}" not found. Fetching all pages for tenant ${tenantId}...`)
+    // If page not found, try different queries to debug
+    if (!data.docs || data.docs.length === 0) {
+      console.warn(`[API] Page with slug "${slug}" not found. Trying alternative queries...`)
+      
+      // Try 1: Without status filter (to see if it's a draft)
+      try {
+        const draftUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&limit=1&depth=0`
+        const draftResponse = await fetch(draftUrl, { cache: 'no-store' })
+        if (draftResponse.ok) {
+          const draftData: CMSResponse<Page> = await draftResponse.json()
+          if (draftData.docs.length > 0) {
+            console.warn(`[API] Found page but status is:`, (draftData.docs[0] as any).status)
+          }
+        }
+      } catch (e) {
+        console.warn('[API] Could not check draft status:', e)
+      }
+      
+      // Try 2: List all pages for this tenant
       try {
         const allPagesUrl = `${CMS_API_URL}/api/pages?where[tenant][equals]=${tenantId}&limit=50&depth=0`
         const allPagesResponse = await fetch(allPagesUrl, { cache: 'no-store' })
