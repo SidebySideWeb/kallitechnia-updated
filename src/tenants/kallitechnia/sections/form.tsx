@@ -52,21 +52,19 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     formValue: form && typeof form === 'object' ? JSON.stringify(form, null, 2).substring(0, 500) : form
   })
 
-  // Extract form - can be: string (ID), relationship object {id, slug}, or already populated form object
+  // Extract form - can be: string (ID), number (ID), relationship object {id, slug}, or already populated form object
   const formSlugOrId =
-    typeof form === 'string'
-      ? form
+    typeof form === 'string' || typeof form === 'number'
+      ? String(form) // Convert number to string
       : form && typeof form === 'object'
         ? (form as any).slug || 
-          (form as any).id || 
-          (form as any)._id || 
+          String((form as any).id || (form as any)._id || '') || // Convert ID to string
           (form as any).form?.slug || // Nested form relationship
-          (form as any).form?.id ||   // Nested form relationship
-          (form as any).form?._id ||  // Nested form relationship
+          String((form as any).form?.id || (form as any).form?._id || '') || // Nested form relationship ID
           null
         : null
 
-  console.log('[Form] Extracted formSlugOrId:', formSlugOrId)
+  console.log('[Form] Extracted formSlugOrId:', formSlugOrId, 'type:', typeof formSlugOrId)
   
   // Also check if form prop itself is a relationship object that needs to be extracted
   const actualFormObject = form && typeof form === 'object' && 'form' in form 

@@ -284,41 +284,64 @@ export interface Form {
 /**
  * Fetch form by slug or ID
  */
-export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
+export async function getFormBySlug(slugOrId: string | number): Promise<Form | null> {
   try {
     // Add timestamp to bust cache (for client-side calls)
     const timestamp = Date.now()
+    const slugOrIdStr = String(slugOrId)
     
-    // Try fetching by slug first
-    let response = await fetch(
-      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=2&_t=${timestamp}`,
-      {
-        cache: 'no-store', // No caching for client components
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-      }
-    )
+    // Check if slugOrId looks like a number (ID) or string (slug)
+    const isNumericId = /^\d+$/.test(slugOrIdStr)
+    
+    let response
+    
+    if (isNumericId) {
+      // If it's numeric, fetch by ID directly (faster)
+      console.log('[API] Fetching form by ID:', slugOrIdStr)
+      response = await fetch(
+        `${CMS_API_URL}/api/forms/${slugOrIdStr}?depth=2&_t=${timestamp}`,
+        {
+          cache: 'no-store', // No caching for client components
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        }
+      )
+    } else {
+      // Try fetching by slug first
+      console.log('[API] Fetching form by slug:', slugOrIdStr)
+      response = await fetch(
+        `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrIdStr}&where[and][1][status][equals]=active&limit=1&depth=2&_t=${timestamp}`,
+        {
+          cache: 'no-store', // No caching for client components
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        }
+      )
 
-    if (response.ok) {
-      const data: CMSResponse<Form> = await response.json()
-      if (data.docs.length > 0) {
-        return data.docs[0]
+      if (response.ok) {
+        const data: CMSResponse<Form> = await response.json()
+        if (data.docs.length > 0) {
+          return data.docs[0]
+        }
       }
+
+      // If not found by slug, try fetching by ID
+      console.log('[API] Form not found by slug, trying by ID:', slugOrIdStr)
+      response = await fetch(
+        `${CMS_API_URL}/api/forms/${slugOrIdStr}?depth=2&_t=${timestamp}`,
+        {
+          cache: 'no-store', // No caching for client components
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        }
+      )
     }
-
-    // If not found by slug, try fetching by ID
-    response = await fetch(
-      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=2&_t=${timestamp}`,
-      {
-        cache: 'no-store', // No caching for client components
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        },
-      }
-    )
 
     if (response.ok) {
       const form: Form = await response.json()
