@@ -41,7 +41,10 @@ export function extractTextFromLexical(node: LexicalNode | string | null | undef
   }
 
   if (node.children && Array.isArray(node.children)) {
-    return node.children.map(extractTextFromLexical).join('')
+    return node.children
+      .filter((child) => child !== null && child !== undefined)
+      .map(extractTextFromLexical)
+      .join('')
   }
 
   return ''
@@ -103,7 +106,7 @@ export function extractParagraphs(
     // Check if nodes are paragraph nodes - extract text from each paragraph separately
     const paragraphs: string[] = []
     for (const node of content) {
-      if (node && typeof node === 'object') {
+      if (node && typeof node === 'object' && node !== null) {
         // If it's a paragraph node, extract text from its children
         if (node.type === 'paragraph' && node.children && Array.isArray(node.children)) {
           const paragraphText = node.children.map(extractTextFromLexical).join('').trim()
@@ -129,7 +132,7 @@ export function extractParagraphs(
       if (root.children && Array.isArray(root.children)) {
         const paragraphs: string[] = []
         for (const node of root.children) {
-          if (node && typeof node === 'object') {
+          if (node && typeof node === 'object' && node !== null) {
             // If it's a paragraph node, extract text from its children
             if (node.type === 'paragraph' && node.children && Array.isArray(node.children)) {
               const paragraphText = node.children.map(extractTextFromLexical).join('').trim()
@@ -157,7 +160,7 @@ export function extractParagraphs(
  * Render Lexical node with formatting
  */
 function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNode {
-  if (!node || typeof node !== 'object') {
+  if (!node || typeof node !== 'object' || node === null) {
     return null
   }
 
@@ -298,5 +301,8 @@ export function renderLexicalContent(
     }
   }
 
-  return nodes.map((node, index) => renderLexicalNode(node, index)).filter(Boolean)
+  return nodes
+    .filter((node) => node && typeof node === 'object' && node !== null)
+    .map((node, index) => renderLexicalNode(node, index))
+    .filter(Boolean)
 }

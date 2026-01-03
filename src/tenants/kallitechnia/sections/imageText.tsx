@@ -17,6 +17,11 @@ interface ImageTextProps {
   image?: string | null
   imageAlt?: string
   imagePosition?: 'left' | 'right'
+  _context?: {
+    pageSlug?: string
+    isHomepage?: boolean
+    sectionIndex?: number
+  }
 }
 
 export function KallitechniaImageText({
@@ -25,6 +30,7 @@ export function KallitechniaImageText({
   image,
   imageAlt,
   imagePosition = 'left',
+  _context,
 }: ImageTextProps) {
   // Safe content extraction - layout is locked
   const safeTitle = title || ''
@@ -38,9 +44,14 @@ export function KallitechniaImageText({
     return null
   }
 
+  // Reduce padding for first 3 sections on about page
+  const isAboutPage = _context?.pageSlug === 'about'
+  const isFirstThree = _context?.sectionIndex !== undefined && _context.sectionIndex < 3
+  const paddingClass = isAboutPage && isFirstThree ? 'py-8' : 'py-20'
+
   // EXACT v0.app structure - DO NOT MODIFY
   return (
-    <section className="py-20 bg-background fade-in-section opacity-0">
+    <section className={`${paddingClass} bg-background fade-in-section opacity-0`}>
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">

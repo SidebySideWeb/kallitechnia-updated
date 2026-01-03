@@ -119,12 +119,18 @@ export default function SafeSections({
           key={`section-${i}-${blockType}`}
           blockType={blockType}
           {...section}
-          _context={context}
+          _context={{
+            ...context,
+            sectionIndex: i,
+          }}
         />,
       )
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(`[SafeSections] Error rendering ${blockType}:`, error)
+      console.error(`[SafeSections] Error rendering ${blockType} at index ${i}:`, error)
+      if (error instanceof Error) {
+        console.error(`[SafeSections] Error message: ${error.message}`)
+        console.error(`[SafeSections] Error stack: ${error.stack}`)
+        console.error(`[SafeSections] Section data:`, JSON.stringify(section, null, 2))
       }
       // Continue rendering other sections
       continue
