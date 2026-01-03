@@ -178,7 +178,7 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
           }
         }, 2000)
       } else {
-        // Reset form after 3 seconds
+        // Auto-reset form after 10 seconds (user can use button for immediate reset)
         setTimeout(() => {
           const initialValues: Record<string, any> = {}
           formData.fields.forEach((field) => {
@@ -190,7 +190,8 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
           })
           setFormValues(initialValues)
           setSubmitStatus({ type: null, message: '' })
-        }, 3000)
+          setErrors({})
+        }, 10000)
       }
     } else {
       setSubmitStatus({
@@ -335,29 +336,78 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
             </div>
           )}
 
+          {/* Success Message - Show prominently, hide form */}
           {submitStatus.type === 'success' && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-              {submitStatus.message}
+            <div className="mb-6 p-8 bg-green-50 border-2 border-green-300 rounded-2xl text-center">
+              <div className="flex flex-col items-center gap-4">
+                <CheckCircle2 className="h-16 w-16 text-green-600" />
+                <div>
+                  <h3 className="text-2xl font-bold text-green-900 mb-2">Success!</h3>
+                  <p className="text-lg text-green-800">{submitStatus.message}</p>
+                </div>
+                {formData.redirectUrl ? (
+                  <p className="text-sm text-green-700 mt-2">
+                    Redirecting in a moment...
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      // Reset form
+                      const initialValues: Record<string, any> = {}
+                      formData.fields.forEach((field) => {
+                        if (field.type === 'checkbox') {
+                          initialValues[field.name] = false
+                        } else {
+                          initialValues[field.name] = ''
+                        }
+                      })
+                      setFormValues(initialValues)
+                      setSubmitStatus({ type: null, message: '' })
+                      setErrors({})
+                    }}
+                    className="mt-4 border-green-300 text-green-800 hover:bg-green-100"
+                  >
+                    Submit Another Response
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
+          {/* Error Message - Show inline above form */}
           {submitStatus.type === 'error' && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-              {submitStatus.message}
+            <div className="mb-6 p-6 bg-red-50 border-2 border-red-300 rounded-lg flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-900 mb-1">Error</h3>
+                <p className="text-red-800">{submitStatus.message}</p>
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {formData.fields.map((field) => renderField(field))}
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-primary text-white hover:bg-primary/90"
-              size="lg"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
-            </Button>
-          </form>
+          {/* Form - Hide on success (unless redirecting) */}
+          {submitStatus.type !== 'success' && (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {formData.fields.map((field) => renderField(field))}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                size="lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit'
+                )}
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </section>
