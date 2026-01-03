@@ -124,12 +124,14 @@ export async function getHomepage(tenantId: string): Promise<Homepage | null> {
  */
 export async function getPageBySlug(
   slug: string,
-  tenantId: string
+  tenantId: string | number
 ): Promise<Page | null> {
-  const apiUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&where[and][2][status][equals]=published&limit=1&depth=2`
+  // Try multiple query formats to handle different tenant ID types
+  const tenantIdStr = String(tenantId)
+  const apiUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantIdStr}&where[and][2][status][equals]=published&limit=1&depth=2`
   
   try {
-    console.log(`[API] Fetching page:`, { slug, tenantId, apiUrl })
+    console.log(`[API] Fetching page:`, { slug, tenantId, tenantIdStr, apiUrl })
     
     const response = await fetch(apiUrl, {
       next: { revalidate: 0 }, // Always fetch fresh data for form updates
