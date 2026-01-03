@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { renderLexicalContent, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
 import { getFormBySlug, submitForm, type Form } from '@/lib/api'
 import { useRouter } from 'next/navigation'
+import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 
 /**
  * DESIGN-LOCKED Form Section
@@ -159,7 +160,9 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     }
 
     // Submit form (use form slug from fetched form data)
+    console.log('[Form] Submitting form:', formData.slug, formValues)
     const result = await submitForm(formData.slug, formValues)
+    console.log('[Form] Submission result:', result)
 
     if (result.success) {
       setSubmitStatus({

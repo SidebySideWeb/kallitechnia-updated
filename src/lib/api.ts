@@ -333,6 +333,10 @@ export async function submitForm(
   data: Record<string, any>
 ): Promise<{ success: boolean; message?: string; redirectUrl?: string; errors?: Record<string, string> }> {
   try {
+    console.log('[API] Submitting form to:', `${CMS_API_URL}/api/forms/submit`)
+    console.log('[API] Form slug:', formSlug)
+    console.log('[API] Form data:', data)
+    
     const response = await fetch(`${CMS_API_URL}/api/forms/submit`, {
       method: 'POST',
       headers: {
@@ -341,9 +345,13 @@ export async function submitForm(
       body: JSON.stringify({ formSlug, data }),
     })
 
+    console.log('[API] Response status:', response.status, response.statusText)
+    
     const result = await response.json()
+    console.log('[API] Response data:', result)
 
     if (!response.ok) {
+      console.error('[API] Submission failed:', result)
       return {
         success: false,
         message: result.error || 'Failed to submit form',
@@ -351,6 +359,7 @@ export async function submitForm(
       }
     }
 
+    console.log('[API] Submission successful')
     return {
       success: true,
       message: result.message,
@@ -358,6 +367,10 @@ export async function submitForm(
     }
   } catch (error) {
     console.error('[API] Error submitting form:', error)
+    if (error instanceof Error) {
+      console.error('[API] Error message:', error.message)
+      console.error('[API] Error stack:', error.stack)
+    }
     return {
       success: false,
       message: 'An error occurred while submitting the form. Please try again.',
