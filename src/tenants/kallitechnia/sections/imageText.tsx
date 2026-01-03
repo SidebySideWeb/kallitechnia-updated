@@ -44,10 +44,10 @@ export function KallitechniaImageText({
     return null
   }
 
-  // Reduce padding for first 3 sections on about page
+  // Reduce padding for first 5 sections on about page
   const isAboutPage = _context?.pageSlug === 'about'
-  const isFirstThree = _context?.sectionIndex !== undefined && _context.sectionIndex < 3
-  const paddingClass = isAboutPage && isFirstThree ? 'py-8' : 'py-20'
+  const isFirstFive = _context?.sectionIndex !== undefined && _context.sectionIndex < 5
+  const paddingClass = isAboutPage && isFirstFive ? 'py-4' : 'py-20'
 
   // EXACT v0.app structure - DO NOT MODIFY
   return (
