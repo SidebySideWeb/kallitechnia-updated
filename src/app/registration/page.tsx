@@ -21,6 +21,27 @@ export default async function RegistrationPage() {
       const page = await getPageBySlug('registration', tenant.id)
       if (page) {
         sections = page.sections || []
+        // Debug: Log sections for troubleshooting
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[RegistrationPage] Fetched page:', page.slug)
+          console.log('[RegistrationPage] Sections count:', sections.length)
+          console.log('[RegistrationPage] Section types:', sections.map(s => s.blockType || s.block_type || s.type))
+          const formSections = sections.filter(s => 
+            (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
+          )
+          console.log('[RegistrationPage] Form blocks found:', formSections.length)
+          if (formSections.length > 0) {
+            console.log('[RegistrationPage] Form block data:', JSON.stringify(formSections[0], null, 2))
+          }
+        }
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[RegistrationPage] Page not found in CMS for slug: registration')
+        }
+      }
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[RegistrationPage] Tenant not found')
       }
     }
   } catch (error) {

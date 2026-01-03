@@ -172,8 +172,32 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
   }, [formSlugOrId, isFormPopulated, form, actualFormObject])
 
   if (!formData) {
-    console.log('[Form] No formData yet, showing loading state or nothing')
-    // Don't return null immediately - show a loading state or wait for fetch
+    // If formSlugOrId is null, it means no form was selected in CMS
+    if (!formSlugOrId) {
+      console.log('[Form] No form selected in CMS block')
+      return (
+        <section className="py-20 bg-background fade-in-section opacity-0">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto text-center">
+              <p className="text-muted-foreground">
+                {title || 'Form'}
+              </p>
+              {description && (
+                <div className="mt-4">
+                  {renderLexicalContent(description)}
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground mt-4">
+                Please select a form in the CMS to display it here.
+              </p>
+            </div>
+          </div>
+        </section>
+      )
+    }
+    
+    // Otherwise, we're still loading
+    console.log('[Form] No formData yet, showing loading state')
     return (
       <section className="py-20 bg-background fade-in-section opacity-0">
         <div className="container mx-auto px-4">
