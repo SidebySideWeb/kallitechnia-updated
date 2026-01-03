@@ -192,7 +192,7 @@ export default async function TermsPage() {
           <p>Τελευταία ενημέρωση: Ιανουάριος 2025</p>
         </div>
       </div>
-
+      )}
       <Footer />
     </div>
   )

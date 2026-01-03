@@ -28,9 +28,9 @@ export function KallitechniaSponsors({ title, subtitle, sponsors }: SponsorsProp
   const safeSponsors = Array.isArray(sponsors) && sponsors.length > 0 ? sponsors : []
 
   // If no sponsors provided, show placeholder grid (matching v0.app)
-  const displayItems = safeSponsors.length > 0
+  const displayItems: Sponsor[] = safeSponsors.length > 0
     ? safeSponsors
-    : Array.from({ length: 6 }, (_, i) => ({ name: `Χορηγός ${i + 1}` }))
+    : Array.from({ length: 6 }, (_, i): Sponsor => ({ name: `Χορηγός ${i + 1}`, logo: null }))
 
   // EXACT v0.app structure - DO NOT MODIFY
   return (
