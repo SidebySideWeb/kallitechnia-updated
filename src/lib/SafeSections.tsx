@@ -37,7 +37,8 @@ const BLOCK_REGISTRY: Record<string, React.ComponentType<any>> = {
   'kallitechnia.imageGallery': KallitechniaImageGallery,
   'kallitechnia.newsGrid': KallitechniaNewsGrid,
   'kallitechnia.sponsors': KallitechniaSponsors,
-  'kallitechnia.ctaBanner': KallitechniaCtaBanner,
+  'kallitechnia.cta': KallitechniaCtaBanner, // CMS uses 'cta', frontend component is CtaBanner
+  'kallitechnia.ctaBanner': KallitechniaCtaBanner, // Keep for backward compatibility
   'kallitechnia.richText': KallitechniaRichText,
   'kallitechnia.quote': KallitechniaQuote,
   'kallitechnia.slogan': KallitechniaSlogan,
