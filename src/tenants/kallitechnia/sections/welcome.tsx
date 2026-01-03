@@ -1,7 +1,9 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
-import { extractParagraphs, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { renderLexicalContent, extractParagraphs, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 
 /**
  * DESIGN-LOCKED Welcome Section
@@ -18,10 +20,32 @@ interface WelcomeProps {
 
 export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) {
   // Safe content extraction - layout is locked
-  const safeImage = image || 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6321-EPivdvbOD9wX1IPMd2dA4e3aZlVtiE.jpeg'
+  const safeImage = extractImageUrl(image) || 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6321-EPivdvbOD9wX1IPMd2dA4e3aZlVtiE.jpeg'
   const safeTitle = title || ''
-  // Extract paragraphs from Lexical format if needed
-  const safeParagraphs = extractParagraphs(paragraphs)
+  
+  // Try to render Lexical content first (preserves formatting)
+  // If that doesn't work, fall back to extracting plain text paragraphs
+  let renderedContent: React.ReactNode[] = []
+  
+  if (paragraphs) {
+    // Check if it's Lexical format (object or array of objects)
+    const isLexicalFormat = 
+      (typeof paragraphs === 'object' && paragraphs !== null && !Array.isArray(paragraphs)) ||
+      (Array.isArray(paragraphs) && paragraphs.length > 0 && typeof paragraphs[0] === 'object' && paragraphs[0] !== null && 'type' in paragraphs[0])
+    
+    if (isLexicalFormat) {
+      // Use renderLexicalContent to properly render with formatting
+      renderedContent = renderLexicalContent(paragraphs)
+    } else {
+      // Fall back to plain text extraction
+      const safeParagraphs = extractParagraphs(paragraphs)
+      renderedContent = safeParagraphs.map((paragraph, index) => (
+        <p key={index} className="text-lg leading-relaxed text-muted-foreground">
+          {paragraph}
+        </p>
+      ))
+    }
+  }
 
   // EXACT v0.app structure - DO NOT MODIFY
   return (
@@ -45,11 +69,14 @@ export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) 
                 {safeTitle}
               </h2>
             )}
-            {safeParagraphs.map((paragraph, index) => (
-              <p key={index} className="text-lg leading-relaxed text-muted-foreground">
-                {paragraph}
+            {renderedContent.length > 0 ? (
+              renderedContent
+            ) : (
+              // Fallback if no content
+              <p className="text-lg leading-relaxed text-muted-foreground">
+                Καλώς ήρθατε στον σύλλογό μας.
               </p>
-            ))}
+            )}
           </div>
         </div>
       </div>

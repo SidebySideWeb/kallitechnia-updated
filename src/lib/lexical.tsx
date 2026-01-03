@@ -82,6 +82,7 @@ export function extractText(
 
 /**
  * Extract array of paragraphs from Lexical content
+ * Properly handles paragraph nodes in Lexical structure
  */
 export function extractParagraphs(
   content: LexicalDocument | LexicalNode[] | string[] | string | null | undefined
@@ -99,8 +100,26 @@ export function extractParagraphs(
     if (content.length > 0 && typeof content[0] === 'string') {
       return content as string[]
     }
-    // Otherwise extract text from each node
-    return content.map(extractTextFromLexical).filter(Boolean)
+    // Check if nodes are paragraph nodes - extract text from each paragraph separately
+    const paragraphs: string[] = []
+    for (const node of content) {
+      if (node && typeof node === 'object') {
+        // If it's a paragraph node, extract text from its children
+        if (node.type === 'paragraph' && node.children && Array.isArray(node.children)) {
+          const paragraphText = node.children.map(extractTextFromLexical).join('').trim()
+          if (paragraphText) {
+            paragraphs.push(paragraphText)
+          }
+        } else {
+          // Otherwise extract text from the node itself
+          const text = extractTextFromLexical(node)
+          if (text) {
+            paragraphs.push(text)
+          }
+        }
+      }
+    }
+    return paragraphs.filter(Boolean)
   }
 
   // Handle Lexical document structure
@@ -108,7 +127,25 @@ export function extractParagraphs(
     if ('root' in content && content.root) {
       const root = content.root as { children?: LexicalNode[] }
       if (root.children && Array.isArray(root.children)) {
-        return root.children.map(extractTextFromLexical).filter(Boolean)
+        const paragraphs: string[] = []
+        for (const node of root.children) {
+          if (node && typeof node === 'object') {
+            // If it's a paragraph node, extract text from its children
+            if (node.type === 'paragraph' && node.children && Array.isArray(node.children)) {
+              const paragraphText = node.children.map(extractTextFromLexical).join('').trim()
+              if (paragraphText) {
+                paragraphs.push(paragraphText)
+              }
+            } else {
+              // Otherwise extract text from the node itself
+              const text = extractTextFromLexical(node)
+              if (text) {
+                paragraphs.push(text)
+              }
+            }
+          }
+        }
+        return paragraphs.filter(Boolean)
       }
     }
   }
