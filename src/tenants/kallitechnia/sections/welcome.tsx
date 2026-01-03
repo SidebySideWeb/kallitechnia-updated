@@ -19,6 +19,11 @@ interface WelcomeProps {
 }
 
 export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) {
+  // Debug logging (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Welcome] Received props:', { image, title, paragraphs, paragraphsType: typeof paragraphs, paragraphsIsArray: Array.isArray(paragraphs) })
+  }
+
   // Safe content extraction - layout is locked
   const safeImage = extractImageUrl(image) || 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6321-EPivdvbOD9wX1IPMd2dA4e3aZlVtiE.jpeg'
   const safeTitle = title || ''
@@ -28,16 +33,41 @@ export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) 
   let renderedContent: React.ReactNode[] = []
   
   if (paragraphs) {
-    // Check if it's Lexical format (object or array of objects)
-    const isLexicalFormat = 
-      (typeof paragraphs === 'object' && paragraphs !== null && !Array.isArray(paragraphs)) ||
-      (Array.isArray(paragraphs) && paragraphs.length > 0 && typeof paragraphs[0] === 'object' && paragraphs[0] !== null && 'type' in paragraphs[0])
-    
-    if (isLexicalFormat) {
-      // Use renderLexicalContent to properly render with formatting
+    // Handle array of strings (most common case from CMS)
+    if (Array.isArray(paragraphs) && paragraphs.length > 0) {
+      // Check if it's an array of strings
+      if (typeof paragraphs[0] === 'string') {
+        // Simple string array - render directly
+        renderedContent = paragraphs.map((paragraph, index) => (
+          <p key={index} className="text-lg leading-relaxed text-muted-foreground">
+            {paragraph}
+          </p>
+        ))
+      } else {
+        // Array of objects - check if Lexical format
+        const isLexicalFormat = paragraphs.length > 0 && 
+          typeof paragraphs[0] === 'object' && 
+          paragraphs[0] !== null && 
+          'type' in paragraphs[0]
+        
+        if (isLexicalFormat) {
+          // Use renderLexicalContent to properly render with formatting
+          renderedContent = renderLexicalContent(paragraphs)
+        } else {
+          // Fall back to extractParagraphs
+          const safeParagraphs = extractParagraphs(paragraphs)
+          renderedContent = safeParagraphs.map((paragraph, index) => (
+            <p key={index} className="text-lg leading-relaxed text-muted-foreground">
+              {paragraph}
+            </p>
+          ))
+        }
+      }
+    } else if (typeof paragraphs === 'object' && paragraphs !== null && !Array.isArray(paragraphs)) {
+      // Single Lexical document object
       renderedContent = renderLexicalContent(paragraphs)
     } else {
-      // Fall back to plain text extraction
+      // Fall back to extractParagraphs for any other format
       const safeParagraphs = extractParagraphs(paragraphs)
       renderedContent = safeParagraphs.map((paragraph, index) => (
         <p key={index} className="text-lg leading-relaxed text-muted-foreground">
@@ -45,8 +75,21 @@ export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) 
         </p>
       ))
     }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Welcome] Rendered content count:', renderedContent.length)
+    }
+  } else {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Welcome] No paragraphs provided')
+    }
   }
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Welcome] Rendered content length:', renderedContent.length)
+  }
+
+  // Always render the section - even if no content (for debugging)
   // EXACT v0.app structure - DO NOT MODIFY
   return (
     <section className="py-20 bg-white fade-in-section opacity-0">
@@ -64,18 +107,31 @@ export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) 
             <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
           <div className="space-y-4">
-            {safeTitle && (
+            {safeTitle ? (
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-balance hover:text-primary transition-colors">
                 {safeTitle}
               </h2>
+            ) : (
+              process.env.NODE_ENV === 'development' && (
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-balance text-red-500">
+                  [DEBUG: No title provided]
+                </h2>
+              )
             )}
             {renderedContent.length > 0 ? (
               renderedContent
             ) : (
               // Fallback if no content
-              <p className="text-lg leading-relaxed text-muted-foreground">
-                Καλώς ήρθατε στον σύλλογό μας.
-              </p>
+              <>
+                {process.env.NODE_ENV === 'development' && (
+                  <p className="text-lg leading-relaxed text-red-500 font-bold">
+                    [DEBUG: No paragraphs rendered. Paragraphs prop: {JSON.stringify(paragraphs)}]
+                  </p>
+                )}
+                <p className="text-lg leading-relaxed text-muted-foreground">
+                  Καλώς ήρθατε στον σύλλογό μας.
+                </p>
+              </>
             )}
           </div>
         </div>
