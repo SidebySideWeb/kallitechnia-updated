@@ -94,8 +94,9 @@ export async function getTenant(code: string = TENANT_CODE): Promise<Tenant | nu
  */
 export async function getHomepage(tenantId: string): Promise<Homepage | null> {
   try {
+    // Note: We don't filter by status here because tenantAccess already filters published content for public users
     const response = await fetch(
-      `${CMS_API_URL}/api/homepages?where[and][0][tenant][equals]=${tenantId}&where[and][1][status][equals]=published&limit=1&depth=2`,
+      `${CMS_API_URL}/api/homepages?where[tenant][equals]=${tenantId}&limit=1&depth=2`,
       {
         next: { revalidate: 60 }, // Revalidate every minute
       }
@@ -127,8 +128,9 @@ export async function getPageBySlug(
   tenantId: string | number
 ): Promise<Page | null> {
   // Try multiple query formats to handle different tenant ID types
+  // Note: We don't filter by status here because tenantAccess already filters published content for public users
   const tenantIdStr = String(tenantId)
-  const apiUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantIdStr}&where[and][2][status][equals]=published&limit=1&depth=2`
+  const apiUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantIdStr}&limit=1&depth=2`
   
   try {
     console.log(`[API] Fetching page:`, { slug, tenantId, tenantIdStr, apiUrl })
@@ -227,8 +229,9 @@ export async function getPosts(
   page: number = 1
 ): Promise<CMSResponse<Post>> {
   try {
+    // Note: We don't filter by status here because tenantAccess already filters published content for public users
     const response = await fetch(
-      `${CMS_API_URL}/api/posts?where[and][0][tenant][equals]=${tenantId}&where[and][1][status][equals]=published&limit=${limit}&page=${page}&sort=-publishedAt&depth=2`,
+      `${CMS_API_URL}/api/posts?where[tenant][equals]=${tenantId}&limit=${limit}&page=${page}&sort=-publishedAt&depth=2`,
       {
         next: { revalidate: 60 }, // Revalidate every minute
       }
@@ -282,8 +285,9 @@ export async function getPostBySlug(
   tenantId: string
 ): Promise<Post | null> {
   try {
+    // Note: We don't filter by status here because tenantAccess already filters published content for public users
     const response = await fetch(
-      `${CMS_API_URL}/api/posts?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&where[and][2][status][equals]=published&limit=1&depth=2`,
+      `${CMS_API_URL}/api/posts?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&limit=1&depth=2`,
       {
         next: { revalidate: 60 }, // Revalidate every minute
       }
