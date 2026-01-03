@@ -89,10 +89,10 @@ export function KallitechniaProgramsGrid({ title, subtitle, programs }: Programs
             return (
               <Card
                 key={index}
-                className={`border-2 ${borderColors[index % 4]} transition-all hover:shadow-2xl hover:-translate-y-2 duration-300 rounded-2xl overflow-hidden group animate-fade-in-up`}
+                className={`border-2 ${borderColors[index % 4]} transition-all hover:shadow-2xl hover:-translate-y-2 duration-300 rounded-2xl overflow-hidden group animate-fade-in-up p-0`}
                 style={{ animationDelay: `${(index + 1) * 0.1}s` }}
               >
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-48 overflow-hidden rounded-t-2xl">
                   {safeProgramImage ? (
                     <Image
                       src={safeProgramImage}

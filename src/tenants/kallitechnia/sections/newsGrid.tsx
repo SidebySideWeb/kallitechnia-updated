@@ -99,9 +99,9 @@ export function KallitechniaNewsGrid({
             return (
               <Card
                 key={index}
-                className="rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+                className="rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 p-0"
               >
-                <div className="relative h-56 overflow-hidden group">
+                <div className="relative h-56 overflow-hidden group rounded-t-2xl">
                   {safeItemImage ? (
                     <Image
                       src={safeItemImage}

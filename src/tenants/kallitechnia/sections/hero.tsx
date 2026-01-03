@@ -57,7 +57,7 @@ export function KallitechniaHero({ title, subtitle, backgroundImage, ctaLabel, c
           />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-transparent" />
         </div>
-        <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
+        <div className="container mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-32 relative z-10">
           <div className="max-w-2xl text-white animate-fade-in-up">
             {safeTitle && (
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-balance">

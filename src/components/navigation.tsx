@@ -43,7 +43,7 @@ export function Navigation({ logo, logoAlt, items }: NavigationProps) {
 
   return (
     <nav className="sticky top-0 z-50 bg-[#F5F5F5]/95 backdrop-blur-sm border-b border-border shadow-sm">
-      <div className="container mx-auto px-8">
+      <div className="container mx-auto px-8 md:px-12 lg:px-16">
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center gap-3">
             <Image
