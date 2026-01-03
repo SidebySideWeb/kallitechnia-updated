@@ -16,14 +16,38 @@ export default async function ContactPage() {
 
   try {
     const tenant = await getTenant()
+    console.log('[ContactPage] Tenant:', tenant?.id, tenant?.name)
+    
     if (tenant) {
       const page = await getPageBySlug('contact', tenant.id)
+      console.log('[ContactPage] Page fetched:', page?.slug, 'Sections count:', page?.sections?.length || 0)
+      
       if (page) {
         sections = page.sections || []
+        console.log('[ContactPage] Section types:', sections.map(s => s.blockType || s.block_type || s.type))
+        
+        const formSections = sections.filter(s => 
+          (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
+        )
+        console.log('[ContactPage] Form blocks found:', formSections.length)
+        
+        if (formSections.length > 0) {
+          console.log('[ContactPage] Form block data:', JSON.stringify(formSections[0], null, 2))
+        } else {
+          console.warn('[ContactPage] ⚠️ No form blocks found in sections!')
+          console.warn('[ContactPage] Available block types:', sections.map(s => ({
+            blockType: s.blockType || s.block_type || s.type,
+            keys: Object.keys(s),
+          })))
+        }
+      } else {
+        console.warn('[ContactPage] ⚠️ Page not found for slug: contact')
       }
+    } else {
+      console.warn('[ContactPage] ⚠️ Tenant not found')
     }
   } catch (error) {
-    console.warn('[ContactPage] Failed to fetch CMS data:', error)
+    console.error('[ContactPage] ❌ Failed to fetch CMS data:', error)
   }
 
   return (
