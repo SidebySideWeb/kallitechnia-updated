@@ -280,8 +280,10 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
           message: result.message || 'Thank you! Your submission has been received.',
         })
 
-        // Scroll to top to show success message
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        // Scroll to top to show success message (defer to avoid forced reflow)
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        })
 
         // Redirect if URL provided
         if (result.redirectUrl) {
@@ -317,8 +319,10 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
         if (result.errors) {
           setErrors(result.errors)
         }
-        // Scroll to top to show error message
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        // Scroll to top to show error message (defer to avoid forced reflow)
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        })
       }
     } catch (error) {
       console.error('[Form] Unexpected error during submission:', error)
@@ -326,7 +330,10 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
         type: 'error',
         message: 'An unexpected error occurred. Please try again.',
       })
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Scroll to top to show error message (defer to avoid forced reflow)
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      })
     } finally {
       setIsSubmitting(false)
     }

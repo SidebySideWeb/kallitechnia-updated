@@ -24,8 +24,11 @@ export function useFadeIn() {
       { threshold: 0.1, rootMargin: '50px' },
     )
 
-    const elements = document.querySelectorAll('.fade-in-section')
-    elements.forEach((el) => observerRef.current?.observe(el))
+    // Defer DOM query to avoid forced reflow during initial render
+    requestAnimationFrame(() => {
+      const elements = document.querySelectorAll('.fade-in-section')
+      elements.forEach((el) => observerRef.current?.observe(el))
+    })
 
     return () => observerRef.current?.disconnect()
   }, [])
