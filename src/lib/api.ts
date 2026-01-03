@@ -126,28 +126,39 @@ export async function getPageBySlug(
   slug: string,
   tenantId: string
 ): Promise<Page | null> {
+  const apiUrl = `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&where[and][2][status][equals]=published&limit=1&depth=2`
+  
   try {
-    const response = await fetch(
-      `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&where[and][2][status][equals]=published&limit=1&depth=2`,
-      {
-        next: { revalidate: 0 }, // Always fetch fresh data for form updates
-        cache: 'no-store', // Ensure no caching
-      }
-    )
+    console.log(`[API] Fetching page:`, { slug, tenantId, apiUrl })
+    
+    const response = await fetch(apiUrl, {
+      next: { revalidate: 0 }, // Always fetch fresh data for form updates
+      cache: 'no-store', // Ensure no caching
+    })
+
+    console.log(`[API] Page response status: ${response.status} ${response.statusText}`)
 
     if (!response.ok) {
-      // Don't throw error, just return null to allow fallback
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`[API] Failed to fetch page (${response.status}): ${response.statusText}`)
-      }
+      const errorText = await response.text().catch(() => 'Unable to read error response')
+      console.error(`[API] Failed to fetch page (${response.status}): ${response.statusText}`)
+      console.error(`[API] Error response: ${errorText}`)
       return null
     }
 
     const data: CMSResponse<Page> = await response.json()
+    console.log(`[API] Page data received:`, {
+      found: data.docs.length > 0,
+      pageSlug: data.docs[0]?.slug,
+      sectionsCount: data.docs[0]?.sections?.length || 0,
+      pageId: data.docs[0]?.id,
+    })
+    
     return data.docs[0] || null
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[API] Error fetching page:', error)
+    console.error('[API] Error fetching page:', error)
+    if (error instanceof Error) {
+      console.error('[API] Error message:', error.message)
+      console.error('[API] Error stack:', error.stack)
     }
     return null
   }

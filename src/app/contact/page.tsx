@@ -14,41 +14,43 @@ import { DebugInfo } from '@/components/DebugInfo'
  */
 export default async function ContactPage() {
   let sections: any[] = []
+  let debugInfo: any = {
+    tenantFound: false,
+    tenantId: null,
+    pageFound: false,
+    pageSlug: null,
+    sectionsCount: 0,
+    error: null,
+  }
 
   try {
     const tenant = await getTenant()
-    console.log('[ContactPage] Tenant:', tenant?.id, tenant?.name)
+    debugInfo.tenantFound = !!tenant
+    debugInfo.tenantId = tenant?.id
     
     if (tenant) {
       const page = await getPageBySlug('contact', tenant.id)
-      console.log('[ContactPage] Page fetched:', page?.slug, 'Sections count:', page?.sections?.length || 0)
+      debugInfo.pageFound = !!page
+      debugInfo.pageSlug = page?.slug
+      debugInfo.sectionsCount = page?.sections?.length || 0
       
       if (page) {
         sections = page.sections || []
-        console.log('[ContactPage] Section types:', sections.map(s => s.blockType || s.block_type || s.type))
-        
-        const formSections = sections.filter(s => 
-          (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
-        )
-        console.log('[ContactPage] Form blocks found:', formSections.length)
-        
-        if (formSections.length > 0) {
-          console.log('[ContactPage] Form block data:', JSON.stringify(formSections[0], null, 2))
-        } else {
-          console.warn('[ContactPage] ⚠️ No form blocks found in sections!')
-          console.warn('[ContactPage] Available block types:', sections.map(s => ({
-            blockType: s.blockType || s.block_type || s.type,
-            keys: Object.keys(s),
-          })))
+        debugInfo.sectionTypes = sections.map(s => s.blockType || s.block_type || s.type)
+        debugInfo.pageData = {
+          id: page.id,
+          slug: page.slug,
+          status: (page as any).status,
+          sectionsLength: page.sections?.length || 0,
         }
       } else {
-        console.warn('[ContactPage] ⚠️ Page not found for slug: contact')
+        debugInfo.error = 'Page not found for slug: contact'
       }
     } else {
-      console.warn('[ContactPage] ⚠️ Tenant not found')
+      debugInfo.error = 'Tenant not found'
     }
   } catch (error) {
-    console.error('[ContactPage] ❌ Failed to fetch CMS data:', error)
+    debugInfo.error = error instanceof Error ? error.message : String(error)
   }
 
   const formSections = sections.filter(s => 
@@ -59,6 +61,7 @@ export default async function ContactPage() {
     <div className="min-h-screen">
       <DebugInfo 
         data={{
+          ...debugInfo,
           sectionsCount: sections.length,
           formSectionsCount: formSections.length,
           sectionTypes: sections.map(s => s.blockType || s.block_type || s.type),
