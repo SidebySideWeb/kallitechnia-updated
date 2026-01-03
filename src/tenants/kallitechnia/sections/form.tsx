@@ -56,43 +56,18 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     'fields' in form &&
     Array.isArray((form as any).fields)
 
-  // Fetch form data if not already populated
+  // Always fetch form data from API to ensure fresh data (ignore populated form to avoid stale cache)
   useEffect(() => {
-    if (isFormPopulated) {
-      // Form is already populated, use it directly
-      const populatedForm = form as any
-      if (populatedForm.status === 'active') {
-        setFormData({
-          id: populatedForm.id || populatedForm._id,
-          name: populatedForm.name,
-          slug: populatedForm.slug,
-          fields: populatedForm.fields || [],
-          successMessage: populatedForm.successMessage,
-          redirectUrl: populatedForm.redirectUrl,
-          status: populatedForm.status,
-        })
-        // Initialize form values
-        const initialValues: Record<string, any> = {}
-        populatedForm.fields.forEach((field: any) => {
-          if (field.type === 'checkbox') {
-            initialValues[field.name] = false
-          } else {
-            initialValues[field.name] = ''
-          }
-        })
-        setFormValues(initialValues)
-      }
-      return
-    }
-
     if (!formSlugOrId) {
       return
     }
 
-    // Fetch form by slug or ID
+    // Always fetch fresh form data from API (even if populated, to get latest labels/changes)
+    console.log('[Form] Fetching fresh form data:', formSlugOrId)
     getFormBySlug(formSlugOrId)
       .then((fetchedForm) => {
         if (fetchedForm) {
+          console.log('[Form] Form data fetched:', fetchedForm.name, 'Fields:', fetchedForm.fields.length)
           setFormData(fetchedForm)
           // Initialize form values
           const initialValues: Record<string, any> = {}
@@ -106,10 +81,60 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
           setFormValues(initialValues)
         } else {
           console.warn('[Form] Form not found by slug/ID:', formSlugOrId)
+          // Fallback to populated form if API fetch fails
+          if (isFormPopulated) {
+            const populatedForm = form as any
+            if (populatedForm.status === 'active') {
+              console.log('[Form] Using populated form as fallback')
+              setFormData({
+                id: populatedForm.id || populatedForm._id,
+                name: populatedForm.name,
+                slug: populatedForm.slug,
+                fields: populatedForm.fields || [],
+                successMessage: populatedForm.successMessage,
+                redirectUrl: populatedForm.redirectUrl,
+                status: populatedForm.status,
+              })
+              const initialValues: Record<string, any> = {}
+              populatedForm.fields.forEach((field: any) => {
+                if (field.type === 'checkbox') {
+                  initialValues[field.name] = false
+                } else {
+                  initialValues[field.name] = ''
+                }
+              })
+              setFormValues(initialValues)
+            }
+          }
         }
       })
       .catch((error) => {
         console.error('[Form] Error fetching form:', error)
+        // Fallback to populated form on error
+        if (isFormPopulated) {
+          const populatedForm = form as any
+          if (populatedForm.status === 'active') {
+            console.log('[Form] Using populated form as fallback after error')
+            setFormData({
+              id: populatedForm.id || populatedForm._id,
+              name: populatedForm.name,
+              slug: populatedForm.slug,
+              fields: populatedForm.fields || [],
+              successMessage: populatedForm.successMessage,
+              redirectUrl: populatedForm.redirectUrl,
+              status: populatedForm.status,
+            })
+            const initialValues: Record<string, any> = {}
+            populatedForm.fields.forEach((field: any) => {
+              if (field.type === 'checkbox') {
+                initialValues[field.name] = false
+              } else {
+                initialValues[field.name] = ''
+              }
+            })
+            setFormValues(initialValues)
+          }
+        }
       })
   }, [formSlugOrId, isFormPopulated, form])
 

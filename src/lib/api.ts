@@ -130,7 +130,8 @@ export async function getPageBySlug(
     const response = await fetch(
       `${CMS_API_URL}/api/pages?where[and][0][slug][equals]=${slug}&where[and][1][tenant][equals]=${tenantId}&where[and][2][status][equals]=published&limit=1&depth=2`,
       {
-        next: { revalidate: 60 }, // Revalidate every minute
+        next: { revalidate: 0 }, // Always fetch fresh data for form updates
+        cache: 'no-store', // Ensure no caching
       }
     )
 
@@ -287,9 +288,10 @@ export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
   try {
     // Try fetching by slug first
     let response = await fetch(
-      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=0`,
+      `${CMS_API_URL}/api/forms?where[and][0][slug][equals]=${slugOrId}&where[and][1][status][equals]=active&limit=1&depth=2`,
       {
-        next: { revalidate: 300 }, // Revalidate every 5 minutes
+        next: { revalidate: 0 }, // Always fetch fresh data (no cache)
+        cache: 'no-store', // Ensure no caching
       }
     )
 
@@ -302,9 +304,10 @@ export async function getFormBySlug(slugOrId: string): Promise<Form | null> {
 
     // If not found by slug, try fetching by ID
     response = await fetch(
-      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=0`,
+      `${CMS_API_URL}/api/forms/${slugOrId}?where[status][equals]=active&depth=2`,
       {
-        next: { revalidate: 300 },
+        next: { revalidate: 0 }, // Always fetch fresh data (no cache)
+        cache: 'no-store', // Ensure no caching
       }
     )
 
