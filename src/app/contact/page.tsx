@@ -7,6 +7,7 @@ import { getTenant, getPageBySlug } from '@/lib/api'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 import { DebugInfo } from '@/components/DebugInfo'
+import { ApiTester } from '@/components/ApiTester'
 
 /**
  * Contact page
@@ -59,6 +60,7 @@ export default async function ContactPage() {
 
   return (
     <div className="min-h-screen">
+      <ApiTester />
       <DebugInfo 
         data={{
           ...debugInfo,
