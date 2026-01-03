@@ -116,6 +116,20 @@ export default function SafeSections({
 
     // Render with safe props
     try {
+      // Special logging for form blocks to help debug
+      if (blockType === 'kallitechnia.form') {
+        console.log(`[SafeSections] Rendering form block at index ${i}:`, {
+          blockType,
+          hasForm: !!(section as any).form,
+          formType: typeof (section as any).form,
+          formValue: typeof (section as any).form === 'object' 
+            ? JSON.stringify((section as any).form, null, 2).substring(0, 200)
+            : (section as any).form,
+          title: (section as any).title,
+          sectionKeys: Object.keys(section),
+        })
+      }
+      
       renderedSections.push(
         <Renderer
           key={`section-${i}-${blockType}`}

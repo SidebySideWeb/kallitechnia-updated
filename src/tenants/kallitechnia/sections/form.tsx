@@ -52,110 +52,94 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
     formValue: form && typeof form === 'object' ? JSON.stringify(form, null, 2).substring(0, 500) : form
   })
 
-  // Extract form - can be: string (ID), number (ID), relationship object {id, slug}, or already populated form object
-  const formSlugOrId =
-    typeof form === 'string' || typeof form === 'number'
-      ? String(form) // Convert number to string
-      : form && typeof form === 'object'
-        ? (form as any).slug || 
-          String((form as any).id || (form as any)._id || '') || // Convert ID to string
-          (form as any).form?.slug || // Nested form relationship
-          String((form as any).form?.id || (form as any).form?._id || '') || // Nested form relationship ID
-          null
-        : null
+  // Comprehensive form extraction - handles all Payload CMS relationship structures
+  // Payload can return: ID string/number, relationship object {id, slug, ...}, or populated form object
+  const extractFormIdentifier = (formData: any): string | number | null => {
+    if (!formData) return null
+    
+    // Case 1: Direct ID (string or number)
+    if (typeof formData === 'string' || typeof formData === 'number') {
+      return formData
+    }
+    
+    // Case 2: Object - check for slug first (preferred for API calls)
+    if (typeof formData === 'object') {
+      // Try slug first (most reliable for API queries)
+      if (formData.slug && typeof formData.slug === 'string') {
+        return formData.slug
+      }
+      
+      // Try id or _id
+      if (formData.id) {
+        return typeof formData.id === 'string' || typeof formData.id === 'number' 
+          ? formData.id 
+          : String(formData.id)
+      }
+      if (formData._id) {
+        return typeof formData._id === 'string' || typeof formData._id === 'number'
+          ? formData._id
+          : String(formData._id)
+      }
+      
+      // Case 3: Nested form relationship (block might have form.form structure)
+      if (formData.form) {
+        const nested = extractFormIdentifier(formData.form)
+        if (nested) return nested
+      }
+    }
+    
+    return null
+  }
 
+  // Extract form identifier (slug or ID)
+  const formSlugOrId = extractFormIdentifier(form)
   console.log('[Form] Extracted formSlugOrId:', formSlugOrId, 'type:', typeof formSlugOrId)
   
-  // Also check if form prop itself is a relationship object that needs to be extracted
-  const actualFormObject = form && typeof form === 'object' && 'form' in form 
-    ? (form as any).form 
-    : form
+  // Get the actual form object (for populated forms from depth=2)
+  const getFormObject = (formData: any): any => {
+    if (!formData) return null
+    
+    // If it's already a populated form object (has fields), return it
+    if (typeof formData === 'object' && Array.isArray(formData.fields)) {
+      return formData
+    }
+    
+    // Check nested form.form
+    if (typeof formData === 'object' && formData.form) {
+      if (typeof formData.form === 'object' && Array.isArray(formData.form.fields)) {
+        return formData.form
+      }
+    }
+    
+    // Return as-is if it's an object (might be relationship object)
+    return typeof formData === 'object' ? formData : null
+  }
 
+  const actualFormObject = getFormObject(form)
+  
   // Check if form is already populated with fields (from CMS depth=2)
-  // Check both form prop and nested form.form
-  const isFormPopulated =
-    (actualFormObject &&
-      typeof actualFormObject === 'object' &&
-      'fields' in actualFormObject &&
-      Array.isArray((actualFormObject as any).fields)) ||
-    (form &&
-      typeof form === 'object' &&
-      'fields' in form &&
-      Array.isArray((form as any).fields))
+  const isFormPopulated = actualFormObject && 
+    typeof actualFormObject === 'object' && 
+    Array.isArray(actualFormObject.fields) &&
+    actualFormObject.fields.length > 0
 
   console.log('[Form] isFormPopulated:', isFormPopulated, 'actualFormObject:', actualFormObject)
 
-  // Always fetch form data from API to ensure fresh data (ignore populated form to avoid stale cache)
+  // Fetch form data - prioritize API fetch, fallback to populated form
   useEffect(() => {
-    if (!formSlugOrId) {
-      return
-    }
-
-    // Always fetch fresh form data from API (even if populated, to get latest labels/changes)
-    const fetchForm = async () => {
-      console.log('[Form] Fetching fresh form data:', formSlugOrId, 'at', new Date().toISOString())
-      try {
-        const fetchedForm = await getFormBySlug(formSlugOrId)
-        if (fetchedForm) {
-          console.log('[Form] Form data fetched:', fetchedForm.name, 'Fields:', fetchedForm.fields.length)
-          console.log('[Form] Field labels:', fetchedForm.fields.map(f => f.label))
-          setFormData(fetchedForm)
-          // Initialize form values
-          const initialValues: Record<string, any> = {}
-          fetchedForm.fields.forEach((field) => {
-            if (field.type === 'checkbox') {
-              initialValues[field.name] = false
-            } else {
-              initialValues[field.name] = ''
-            }
-          })
-          setFormValues(initialValues)
-        } else {
-          console.warn('[Form] Form not found by slug/ID:', formSlugOrId)
-          // Fallback to populated form if API fetch fails
-          if (isFormPopulated) {
-            const populatedForm = form as any
-            if (populatedForm.status === 'active') {
-              console.log('[Form] Using populated form as fallback')
-              setFormData({
-                id: populatedForm.id || populatedForm._id,
-                name: populatedForm.name,
-                slug: populatedForm.slug,
-                fields: populatedForm.fields || [],
-                successMessage: populatedForm.successMessage,
-                redirectUrl: populatedForm.redirectUrl,
-                status: populatedForm.status,
-              })
-              const initialValues: Record<string, any> = {}
-              populatedForm.fields.forEach((field: any) => {
-                if (field.type === 'checkbox') {
-                  initialValues[field.name] = false
-                } else {
-                  initialValues[field.name] = ''
-                }
-              })
-              setFormValues(initialValues)
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[Form] Error fetching form:', error)
-        // Fallback to populated form on error
-        if (isFormPopulated) {
-          const populatedForm = (actualFormObject || form) as any
-          if (populatedForm.status === 'active') {
-            console.log('[Form] Using populated form as fallback after error')
-            setFormData({
-              id: populatedForm.id || populatedForm._id,
-              name: populatedForm.name,
-              slug: populatedForm.slug,
-              fields: populatedForm.fields || [],
-              successMessage: populatedForm.successMessage,
-              redirectUrl: populatedForm.redirectUrl,
-              status: populatedForm.status,
-            })
+    const initializeForm = async () => {
+      // If we have a slug/ID, try fetching from API first (ensures fresh data)
+      if (formSlugOrId) {
+        console.log('[Form] Fetching fresh form data from API:', formSlugOrId, 'at', new Date().toISOString())
+        try {
+          const fetchedForm = await getFormBySlug(formSlugOrId)
+          if (fetchedForm && fetchedForm.status === 'active') {
+            console.log('[Form] ✅ Form fetched from API:', fetchedForm.name, 'Fields:', fetchedForm.fields.length)
+            console.log('[Form] Field labels:', fetchedForm.fields.map(f => f.label))
+            setFormData(fetchedForm)
+            // Initialize form values
             const initialValues: Record<string, any> = {}
-            populatedForm.fields.forEach((field: any) => {
+            fetchedForm.fields.forEach((field) => {
               if (field.type === 'checkbox') {
                 initialValues[field.name] = false
               } else {
@@ -163,12 +147,50 @@ export function KallitechniaForm({ form, title, description }: FormProps) {
               }
             })
             setFormValues(initialValues)
+            return // Success - exit early
+          } else {
+            console.warn('[Form] ⚠️ Form not found or inactive via API:', formSlugOrId)
           }
+        } catch (error) {
+          console.error('[Form] ❌ Error fetching form from API:', error)
         }
       }
+      
+      // Fallback: Use populated form from CMS depth=2 if available
+      if (isFormPopulated && actualFormObject) {
+        const populatedForm = actualFormObject
+        if (populatedForm.status === 'active' && Array.isArray(populatedForm.fields) && populatedForm.fields.length > 0) {
+          console.log('[Form] ✅ Using populated form from CMS:', populatedForm.name || populatedForm.slug, 'Fields:', populatedForm.fields.length)
+          setFormData({
+            id: populatedForm.id || populatedForm._id || String(formSlugOrId || ''),
+            name: populatedForm.name || 'Form',
+            slug: populatedForm.slug || String(formSlugOrId || ''),
+            fields: populatedForm.fields || [],
+            successMessage: populatedForm.successMessage,
+            redirectUrl: populatedForm.redirectUrl,
+            status: populatedForm.status || 'active',
+          })
+          // Initialize form values
+          const initialValues: Record<string, any> = {}
+          populatedForm.fields.forEach((field: any) => {
+            if (field.type === 'checkbox') {
+              initialValues[field.name] = false
+            } else {
+              initialValues[field.name] = ''
+            }
+          })
+          setFormValues(initialValues)
+          return // Success - exit early
+        } else {
+          console.warn('[Form] ⚠️ Populated form is inactive or has no fields')
+        }
+      }
+      
+      // If we get here, form couldn't be loaded
+      console.warn('[Form] ❌ Could not load form. formSlugOrId:', formSlugOrId, 'isFormPopulated:', isFormPopulated)
     }
 
-    fetchForm()
+    initializeForm()
   }, [formSlugOrId, isFormPopulated, form, actualFormObject])
 
   if (!formData) {

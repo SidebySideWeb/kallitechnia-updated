@@ -177,9 +177,9 @@ export default async function RegistrationPage() {
       </section>
 
       {/* CMS Sections (includes form if configured) */}
-      {sections.length > 0 ? (
-        <main>
-          <PageClient>
+      <main>
+        <PageClient>
+          {sections.length > 0 ? (
             <SafeSections
               sections={sections}
               tenantCode="kallitechnia"
@@ -188,19 +188,24 @@ export default async function RegistrationPage() {
                 isHomepage: false,
               }}
             />
-          </PageClient>
-        </main>
-      ) : (
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <p className="text-lg text-muted-foreground">
-                Η φόρμα εγγραφής θα εμφανιστεί εδώ όταν ρυθμιστεί στο CMS.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <section className="py-16 bg-muted/30">
+              <div className="container mx-auto px-4">
+                <div className="max-w-3xl mx-auto text-center">
+                  <p className="text-lg text-muted-foreground">
+                    Η φόρμα εγγραφής θα εμφανιστεί εδώ όταν ρυθμιστεί στο CMS.
+                  </p>
+                  {process.env.NODE_ENV === 'development' && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Debug: No sections found. Check CMS for registration page.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+        </PageClient>
+      </main>
 
       {/* CTA Banner */}
       <section className="py-20 bg-gradient-to-r from-primary via-secondary to-accent">
