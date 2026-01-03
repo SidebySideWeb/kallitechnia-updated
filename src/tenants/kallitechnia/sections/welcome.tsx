@@ -36,9 +36,11 @@ export function KallitechniaWelcome({ image, title, paragraphs }: WelcomeProps) 
     // Handle array of strings (most common case from CMS)
     if (Array.isArray(paragraphs) && paragraphs.length > 0) {
       // Check if it's an array of strings
-      if (typeof paragraphs[0] === 'string') {
+      const firstItem = paragraphs[0]
+      if (typeof firstItem === 'string') {
         // Simple string array - render directly
-        renderedContent = paragraphs.map((paragraph, index) => (
+        // TypeScript: we've verified it's a string array, safe to cast
+        renderedContent = (paragraphs as string[]).map((paragraph: string, index: number) => (
           <p key={index} className="text-lg leading-relaxed text-muted-foreground">
             {paragraph}
           </p>
