@@ -208,7 +208,8 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
       .map((child, idx) => renderLexicalNode(child, idx))
       .filter(Boolean)
 
-    if (childElements.length === 0) {
+    // For link nodes, allow rendering even if children are empty (might have URL but no text)
+    if (childElements.length === 0 && type !== 'link') {
       return null
     }
 
@@ -251,7 +252,7 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
         if (rest.fields?.doc?.value?.url) {
           url = rest.fields.doc.value.url
         }
-        // Check for external link URL
+        // Check for external link URL (Payload CMS format)
         else if (rest.fields?.url) {
           url = rest.fields.url
         }
@@ -264,6 +265,18 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
           url = rest.url || rest.href
         }
         
+        // Debug logging (always log to help diagnose)
+        console.log('[Lexical] Processing link node:', {
+          type,
+          hasFields: !!rest.fields,
+          fieldsKeys: rest.fields ? Object.keys(rest.fields) : [],
+          fieldsDoc: rest.fields?.doc ? 'exists' : 'missing',
+          fieldsUrl: rest.fields?.url,
+          extractedUrl: url,
+          childrenCount: children?.length || 0,
+          nodeId: rest.id || 'no-id',
+        })
+        
         // Normalize relative URLs to absolute CMS URLs
         if (url && typeof url === 'string' && url.startsWith('/api/media/')) {
           const CMS_API_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.ftiaxesite.gr'
@@ -273,13 +286,20 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
         // Fallback to '#' if no URL found
         if (!url || typeof url !== 'string') {
           url = '#'
-          // Debug in development
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('[Lexical] Link node without URL:', { type, rest, children })
-          }
+          console.warn('[Lexical] ⚠️ Link node without URL:', { 
+            type, 
+            rest, 
+            fields: rest.fields,
+            fieldsDoc: rest.fields?.doc,
+            fieldsUrl: rest.fields?.url,
+            children: children?.length || 0 
+          })
         }
         
         const isExternal = url && url !== '#' && (url.startsWith('http://') || url.startsWith('https://'))
+        
+        // Use child elements or fallback to URL if no children
+        const linkContent = childElements.length > 0 ? childElements : url
         
         // For external links, open in new tab with security attributes
         if (isExternal) {
@@ -291,7 +311,7 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              {childElements}
+              {linkContent}
             </a>
           )
         }
@@ -299,7 +319,7 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
         // For internal links or relative links
         return (
           <a key={index} href={url} className="text-primary hover:underline">
-            {childElements}
+            {linkContent}
           </a>
         )
       default:
