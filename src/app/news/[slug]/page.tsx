@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getTenant, getPostBySlug } from '@/lib/api'
 import { renderLexicalContent } from '@/lib/lexical'
+import { extractImageUrl } from '@/lib/imageUtils'
 import { notFound } from 'next/navigation'
 
 interface PostPageProps {
@@ -46,9 +47,9 @@ export default async function PostPage({ params }: PostPageProps) {
       })
     : ''
 
-  // Get featured image URL
+  // Get featured image URL - normalize to absolute URL for Next.js Image
   const featuredImageUrl =
-    post.featuredImage?.url ||
+    extractImageUrl(post.featuredImage) ||
     'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6341-lYd2EHQV08gx6DxJdWhs3MXKIhJs8l.jpeg'
 
   return (

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { getTenant, getPosts } from '@/lib/api'
+import { extractImageUrl } from '@/lib/imageUtils'
 import Link from 'next/link'
 
 /**
@@ -32,7 +33,7 @@ export default async function NewsPage() {
           : '',
         excerpt: post.excerpt || '',
         image:
-          post.featuredImage?.url ||
+          extractImageUrl(post.featuredImage) ||
           'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG_6341-lYd2EHQV08gx6DxJdWhs3MXKIhJs8l.jpeg',
         slug: post.slug,
       }))
