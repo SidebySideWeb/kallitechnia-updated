@@ -47,7 +47,7 @@ export function Footer({
     },
     { platform: 'youtube', url: 'https://youtube.com/@kallitechniagymnastics?si=sZvo_JM4gkKPu0Lp' },
   ]
-  const safeCopyrightText = copyrightText || '2025 Γυμναστική Καλλιτεχνία Κεφαλονιάς. Όλα τα δικαιώματα διατηρούνται.'
+  const safeCopyrightText = copyrightText || '2026 Γυμναστική Καλλιτεχνία Κεφαλονιάς. Όλα τα δικαιώματα διατηρούνται.'
 
   const getSocialIcon = (platform?: string) => {
     const platformLower = (platform || '').toLowerCase()
@@ -181,7 +181,20 @@ export function Footer({
 
         {/* Copyright - EXACT v0.app structure */}
         <div className="border-t border-[#4527A0] pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <p>&copy; {safeCopyrightText}</p>
+          <div className="flex flex-col gap-1">
+            <p>&copy; {safeCopyrightText}</p>
+            <p>
+              Powered by{' '}
+              <a
+                href="https://www.ftiaxesite.gr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-secondary transition-colors underline"
+              >
+                ftiaxesite.gr
+              </a>
+            </p>
+          </div>
           <div className="flex gap-4">
             <Link href="/terms" className="hover:text-secondary transition-colors">
               Όροι Χρήσης
