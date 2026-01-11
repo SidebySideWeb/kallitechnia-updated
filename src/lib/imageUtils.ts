@@ -189,3 +189,79 @@ export function extractImageUrl(
 
   return null
 }
+
+/**
+ * Converts a CMS file URL to a frontend proxy URL
+ * Masks the CMS domain so users see the frontend domain instead
+ * 
+ * Examples:
+ * - `/api/media/file/document.pdf` → `/api/download/document.pdf`
+ * - `https://cms.ftiaxesite.gr/api/media/file/document.pdf` → `/api/download/document.pdf`
+ * - `document.pdf` → `/api/download/document.pdf`
+ */
+export function getProxyDownloadUrl(
+  fileUrl: string | { url?: string; filename?: string } | null | undefined
+): string | null {
+  if (!fileUrl) {
+    return null
+  }
+
+  // Handle object (Payload CMS media object)
+  if (typeof fileUrl === 'object' && fileUrl !== null) {
+    if (fileUrl.url && typeof fileUrl.url === 'string') {
+      return getProxyDownloadUrl(fileUrl.url)
+    }
+    if (fileUrl.filename && typeof fileUrl.filename === 'string') {
+      return getProxyDownloadUrl(fileUrl.filename)
+    }
+    return null
+  }
+
+  // Handle string URLs
+  if (typeof fileUrl !== 'string') {
+    return null
+  }
+
+  const url = fileUrl.trim()
+  if (!url) {
+    return null
+  }
+
+  // Extract filename from various URL formats
+  let filename = url
+
+  // If it's an absolute URL, extract the path
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const urlObj = new URL(url)
+      filename = urlObj.pathname
+    } catch {
+      // Invalid URL, use as-is
+      filename = url
+    }
+  }
+
+  // Extract filename from path
+  // Handle paths like: /api/media/file/document.pdf or media/file/document.pdf
+  if (filename.includes('/api/media/file/')) {
+    filename = filename.split('/api/media/file/')[1]
+  } else if (filename.includes('media/file/')) {
+    filename = filename.split('media/file/')[1]
+  } else if (filename.startsWith('/api/')) {
+    filename = filename.replace('/api/', '')
+  } else if (filename.startsWith('/')) {
+    filename = filename.substring(1)
+  }
+
+  // Clean up filename (remove query params if any)
+  if (filename.includes('?')) {
+    filename = filename.split('?')[0]
+  }
+
+  if (!filename) {
+    return null
+  }
+
+  // Return proxy URL
+  return `/api/download/${filename}`
+}
