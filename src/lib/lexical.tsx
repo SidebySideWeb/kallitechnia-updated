@@ -213,6 +213,101 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
       return null
     }
 
+    // Handle link nodes first (before switch) to ensure they're always processed
+    if (type === 'link') {
+      // Lexical link nodes in Payload CMS can have URL in various properties
+      // Payload CMS structure:
+      // - Internal document/media links: fields.doc.value.url
+      // - External links: fields.url or fields.href
+      let url: string | null = null
+      
+      // Check for internal document/media link (Payload CMS format)
+      if (rest.fields?.doc?.value?.url) {
+        url = rest.fields.doc.value.url
+      }
+      // Check for external link URL (Payload CMS format)
+      else if (rest.fields?.url) {
+        url = rest.fields.url
+      }
+      // Check for href in fields
+      else if (rest.fields?.href) {
+        url = rest.fields.href
+      }
+      // Check direct properties (fallback)
+      else if (rest.url || rest.href) {
+        url = rest.url || rest.href
+      }
+      
+      // Debug logging (always log to help diagnose)
+      console.log('[Lexical] 🔗 Processing link node:', {
+        type,
+        hasFields: !!rest.fields,
+        fieldsKeys: rest.fields ? Object.keys(rest.fields) : [],
+        fieldsDoc: rest.fields?.doc ? 'exists' : 'missing',
+        fieldsDocValue: rest.fields?.doc?.value ? 'exists' : 'missing',
+        fieldsDocValueUrl: rest.fields?.doc?.value?.url,
+        fieldsUrl: rest.fields?.url,
+        extractedUrl: url,
+        childrenCount: children?.length || 0,
+        nodeId: rest.id || 'no-id',
+        fullNode: node,
+      })
+      
+      // Normalize relative URLs to absolute CMS URLs
+      if (url && typeof url === 'string' && url.startsWith('/api/media/')) {
+        const CMS_API_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.ftiaxesite.gr'
+        url = `${CMS_API_URL}${url}`
+      }
+      
+      // Fallback to '#' if no URL found
+      if (!url || typeof url !== 'string') {
+        url = '#'
+        console.warn('[Lexical] ⚠️ Link node without URL:', { 
+          type, 
+          rest, 
+          fields: rest.fields,
+          fieldsDoc: rest.fields?.doc,
+          fieldsUrl: rest.fields?.url,
+          children: children?.length || 0,
+          fullNode: node,
+        })
+      }
+      
+      const isExternal = url && url !== '#' && (url.startsWith('http://') || url.startsWith('https://'))
+      
+      // Use child elements or fallback to URL if no children
+      const linkContent = childElements.length > 0 ? childElements : (url !== '#' ? url : 'Link')
+      
+      console.log('[Lexical] ✅ Rendering link:', {
+        url,
+        isExternal,
+        hasContent: childElements.length > 0,
+        contentPreview: typeof linkContent === 'string' ? linkContent.substring(0, 50) : 'React node',
+      })
+      
+      // For external links, open in new tab with security attributes
+      if (isExternal) {
+        return (
+          <a
+            key={index}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            {linkContent}
+          </a>
+        )
+      }
+      
+      // For internal links or relative links
+      return (
+        <a key={index} href={url} className="text-primary hover:underline">
+          {linkContent}
+        </a>
+      )
+    }
+
     switch (type) {
       case 'paragraph':
         return (
@@ -241,87 +336,7 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
             {childElements}
           </li>
         )
-      case 'link':
-        // Lexical link nodes in Payload CMS can have URL in various properties
-        // Payload CMS structure:
-        // - Internal document/media links: fields.doc.value.url
-        // - External links: fields.url or fields.href
-        let url: string | null = null
-        
-        // Check for internal document/media link (Payload CMS format)
-        if (rest.fields?.doc?.value?.url) {
-          url = rest.fields.doc.value.url
-        }
-        // Check for external link URL (Payload CMS format)
-        else if (rest.fields?.url) {
-          url = rest.fields.url
-        }
-        // Check for href in fields
-        else if (rest.fields?.href) {
-          url = rest.fields.href
-        }
-        // Check direct properties (fallback)
-        else if (rest.url || rest.href) {
-          url = rest.url || rest.href
-        }
-        
-        // Debug logging (always log to help diagnose)
-        console.log('[Lexical] Processing link node:', {
-          type,
-          hasFields: !!rest.fields,
-          fieldsKeys: rest.fields ? Object.keys(rest.fields) : [],
-          fieldsDoc: rest.fields?.doc ? 'exists' : 'missing',
-          fieldsUrl: rest.fields?.url,
-          extractedUrl: url,
-          childrenCount: children?.length || 0,
-          nodeId: rest.id || 'no-id',
-        })
-        
-        // Normalize relative URLs to absolute CMS URLs
-        if (url && typeof url === 'string' && url.startsWith('/api/media/')) {
-          const CMS_API_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.ftiaxesite.gr'
-          url = `${CMS_API_URL}${url}`
-        }
-        
-        // Fallback to '#' if no URL found
-        if (!url || typeof url !== 'string') {
-          url = '#'
-          console.warn('[Lexical] ⚠️ Link node without URL:', { 
-            type, 
-            rest, 
-            fields: rest.fields,
-            fieldsDoc: rest.fields?.doc,
-            fieldsUrl: rest.fields?.url,
-            children: children?.length || 0 
-          })
-        }
-        
-        const isExternal = url && url !== '#' && (url.startsWith('http://') || url.startsWith('https://'))
-        
-        // Use child elements or fallback to URL if no children
-        const linkContent = childElements.length > 0 ? childElements : url
-        
-        // For external links, open in new tab with security attributes
-        if (isExternal) {
-          return (
-            <a
-              key={index}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {linkContent}
-            </a>
-          )
-        }
-        
-        // For internal links or relative links
-        return (
-          <a key={index} href={url} className="text-primary hover:underline">
-            {linkContent}
-          </a>
-        )
+      // Link case is now handled above before the switch statement
       default:
         return (
           <div key={index} className="mb-4">
