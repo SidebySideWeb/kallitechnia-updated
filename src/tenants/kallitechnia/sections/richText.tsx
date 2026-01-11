@@ -110,7 +110,18 @@ export function KallitechniaRichText({ title, subtitle, content, _context }: Ric
               )}
             </div>
           )}
-          <div className="space-y-6 text-lg leading-relaxed text-muted-foreground prose prose-lg max-w-none">
+          <div className="space-y-6 text-lg leading-relaxed text-muted-foreground prose prose-lg max-w-none rich-text-content">
+            <style jsx>{`
+              .rich-text-content :global(a) {
+                color: hsl(var(--primary));
+                text-decoration: underline;
+                font-weight: 500;
+              }
+              .rich-text-content :global(a:hover) {
+                text-decoration: underline;
+                opacity: 0.8;
+              }
+            `}</style>
             <RichText data={normalizedContent as any} />
           </div>
         </div>

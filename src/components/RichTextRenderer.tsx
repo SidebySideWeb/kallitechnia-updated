@@ -12,6 +12,7 @@ interface RichTextRendererProps {
  * Client component wrapper for Payload's RichText component
  * Allows using RichText in server components
  * Normalizes content to the format expected by RichText (SerializedEditorState with root property)
+ * Links are automatically rendered by RichText and styled via CSS
  */
 export function RichTextRenderer({ content, className }: RichTextRendererProps) {
   if (!content) {
@@ -63,8 +64,20 @@ export function RichTextRenderer({ content, className }: RichTextRendererProps) 
 
   // Type assertion needed because RichText expects SerializedEditorState
   // which is compatible with our LexicalDocument structure
+  // RichText automatically renders links, we style them via CSS class on wrapper
   return (
-    <div className={className}>
+    <div className={`rich-text-content ${className || ''}`}>
+      <style jsx>{`
+        .rich-text-content :global(a) {
+          color: hsl(var(--primary));
+          text-decoration: underline;
+          font-weight: 500;
+        }
+        .rich-text-content :global(a:hover) {
+          text-decoration: underline;
+          opacity: 0.8;
+        }
+      `}</style>
       <RichText data={normalizedContent as any} />
     </div>
   )
