@@ -67,17 +67,6 @@ export function RichTextRenderer({ content, className }: RichTextRendererProps) 
   // RichText automatically renders links, we style them via CSS class on wrapper
   return (
     <div className={`rich-text-content ${className || ''}`}>
-      <style jsx>{`
-        .rich-text-content :global(a) {
-          color: hsl(var(--primary));
-          text-decoration: underline;
-          font-weight: 500;
-        }
-        .rich-text-content :global(a:hover) {
-          text-decoration: underline;
-          opacity: 0.8;
-        }
-      `}</style>
       <RichText data={normalizedContent as any} />
     </div>
   )

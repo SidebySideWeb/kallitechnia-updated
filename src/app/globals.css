@@ -141,3 +141,15 @@ html {
   transform: translateY(0);
 }
 
+/* Rich text content links */
+.rich-text-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.rich-text-content a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
