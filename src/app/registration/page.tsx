@@ -6,6 +6,7 @@ import { MapPin, Phone, Mail, Clock, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
 import { getTenant, getPageBySlug } from '@/lib/api'
 import { renderLexicalContent, extractText, extractParagraphs } from '@/lib/lexical'
+import { normalizeImageUrl } from '@/lib/imageUtils'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -170,7 +171,12 @@ export default async function RegistrationPage() {
                       )}
                       {downloadButton.fileUrl && (
                         <Button className="bg-secondary hover:bg-secondary/90" asChild>
-                          <a href={downloadButton.fileUrl} download={downloadButton.fileName}>
+                          <a 
+                            href={normalizeImageUrl(downloadButton.fileUrl) || downloadButton.fileUrl} 
+                            download={downloadButton.fileName}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <Download className="mr-2 h-4 w-4" />
                             {downloadButton.buttonLabel || 'Κατέβασε την Αίτηση (PDF)'}
                           </a>
