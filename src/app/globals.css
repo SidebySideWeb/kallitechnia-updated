@@ -141,15 +141,22 @@ html {
   transform: translateY(0);
 }
 
-/* Rich text content links */
+/* Rich text content links - use !important to override paragraph text color */
 .rich-text-content a {
-  color: hsl(var(--primary));
-  text-decoration: underline;
-  font-weight: 500;
+  color: hsl(var(--primary)) !important;
+  text-decoration: underline !important;
+  font-weight: 500 !important;
 }
 
 .rich-text-content a:hover {
-  text-decoration: underline;
-  opacity: 0.8;
+  text-decoration: underline !important;
+  opacity: 0.8 !important;
+}
+
+/* Ensure links are visible even inside paragraphs with muted text */
+.rich-text-content p a,
+.rich-text-content .text-muted-foreground a {
+  color: hsl(var(--primary)) !important;
+  text-decoration: underline !important;
 }
 

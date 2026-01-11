@@ -311,8 +311,8 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline font-medium"
-            style={{ textDecoration: 'underline' }}
+            className="text-primary hover:underline font-medium !text-primary"
+            style={{ textDecoration: 'underline', color: 'hsl(var(--primary))' }}
           >
             {linkContent}
           </a>
@@ -324,8 +324,8 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
         <a 
           key={index || `link-${url}`} 
           href={url} 
-          className="text-primary hover:underline font-medium"
-          style={{ textDecoration: 'underline' }}
+          className="text-primary hover:underline font-medium !text-primary"
+          style={{ textDecoration: 'underline', color: 'hsl(var(--primary))' }}
         >
           {linkContent}
         </a>
