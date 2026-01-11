@@ -4,7 +4,6 @@ import { PageHeaderGradient } from '@/components/PageHeaderGradient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { getTenant, getPageBySlug } from '@/lib/api'
-import { renderContactText } from '@/lib/contactUtils'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -100,7 +99,7 @@ export default async function ContactPage() {
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <MapPin className="h-6 w-6 text-primary" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-xl mb-2 text-primary">
                           {addressItem.label || 'Διεύθυνση'}
                         </h3>
@@ -121,12 +120,12 @@ export default async function ContactPage() {
                       <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <Phone className="h-6 w-6 text-secondary" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-xl mb-2 text-primary">
                           {phoneItem.label || 'Τηλέφωνο'}
                         </h3>
                         <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {renderContactText(phoneItem.content)}
+                          {phoneItem.content}
                         </p>
                       </div>
                     </div>
@@ -140,14 +139,14 @@ export default async function ContactPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Mail className="h-6 w-6 text-accent" />
+                        <Mail className="w-5 h-5 text-accent" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-xl mb-2 text-primary">
                           {emailItem.label || 'Email'}
                         </h3>
                         <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {renderContactText(emailItem.content)}
+                          {emailItem.content}
                         </p>
                       </div>
                     </div>
@@ -163,7 +162,7 @@ export default async function ContactPage() {
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <Clock className="h-6 w-6 text-primary" />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-xl mb-2 text-primary">
                           {hoursItem.label || 'Ώρες Λειτουργίας'}
                         </h3>
