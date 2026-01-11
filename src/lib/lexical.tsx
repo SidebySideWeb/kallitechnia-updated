@@ -276,24 +276,43 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
       const isExternal = url && url !== '#' && (url.startsWith('http://') || url.startsWith('https://'))
       
       // Use child elements or fallback to URL if no children
-      const linkContent = childElements.length > 0 ? childElements : (url !== '#' ? url : 'Link')
+      // If no children and no valid URL, use empty string (will be handled below)
+      let linkContent: React.ReactNode
+      if (childElements.length > 0) {
+        linkContent = childElements
+      } else if (url !== '#') {
+        // If no text content, use the URL as the link text
+        const urlText = url.startsWith('http') ? url.replace(/^https?:\/\//, '') : url
+        linkContent = urlText
+      } else {
+        linkContent = 'Link'
+      }
+      
+      // Ensure linkContent is not empty
+      if (!linkContent || (typeof linkContent === 'string' && linkContent.trim() === '')) {
+        linkContent = url !== '#' ? (url.startsWith('http') ? url.replace(/^https?:\/\//, '') : url) : 'Link'
+      }
       
       console.log('[Lexical] ✅ Rendering link:', {
         url,
         isExternal,
-        hasContent: childElements.length > 0,
-        contentPreview: typeof linkContent === 'string' ? linkContent.substring(0, 50) : 'React node',
+        hasChildren: childElements.length > 0,
+        childrenCount: children?.length || 0,
+        linkContentType: typeof linkContent,
+        linkContentPreview: typeof linkContent === 'string' ? linkContent.substring(0, 50) : 'React node',
+        willRender: !!linkContent,
       })
       
       // For external links, open in new tab with security attributes
       if (isExternal) {
         return (
           <a
-            key={index}
+            key={index || `link-${url}`}
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-primary hover:underline font-medium"
+            style={{ textDecoration: 'underline' }}
           >
             {linkContent}
           </a>
@@ -302,7 +321,12 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
       
       // For internal links or relative links
       return (
-        <a key={index} href={url} className="text-primary hover:underline">
+        <a 
+          key={index || `link-${url}`} 
+          href={url} 
+          className="text-primary hover:underline font-medium"
+          style={{ textDecoration: 'underline' }}
+        >
           {linkContent}
         </a>
       )
@@ -391,8 +415,40 @@ export function renderLexicalContent(
     }
   }
 
-  return nodes
+  // Debug: Log the structure being processed
+  console.log('[Lexical] 📝 Rendering content:', {
+    contentType: typeof content,
+    isArray: Array.isArray(content),
+    nodesCount: nodes.length,
+    hasRoot: typeof content === 'object' && content !== null && 'root' in content,
+    firstNodeType: nodes[0]?.type,
+    nodes: nodes.slice(0, 3), // First 3 nodes for debugging
+  })
+
+  const rendered = nodes
     .filter((node) => node && typeof node === 'object' && node !== null)
-    .map((node, index) => renderLexicalNode(node, index))
+    .map((node, index) => {
+      const result = renderLexicalNode(node, index)
+      // Debug: Check if link nodes are in the structure
+      if (node.type === 'link' || (node as any).fields?.url || (node as any).fields?.doc) {
+        console.log('[Lexical] 🔍 Found potential link node:', {
+          type: node.type,
+          hasFields: !!(node as any).fields,
+          willRender: !!result,
+        })
+      }
+      return result
+    })
     .filter(Boolean)
+
+  console.log('[Lexical] ✅ Rendered nodes:', {
+    count: rendered.length,
+    hasLinks: rendered.some((node) => {
+      // Check if rendered node contains links
+      if (React.isValidElement(node) && node.type === 'a') return true
+      return false
+    }),
+  })
+
+  return rendered
 }
