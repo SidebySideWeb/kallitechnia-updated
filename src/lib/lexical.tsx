@@ -241,7 +241,28 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
           </li>
         )
       case 'link':
-        const url = rest.url || rest.href || '#'
+        // Lexical link nodes can have URL in various properties
+        const url = rest.url || rest.href || rest.fields?.url || rest.fields?.href || '#'
+        const isExternal = url && (url.startsWith('http://') || url.startsWith('https://'))
+        const isInternal = url && url.startsWith('/')
+        
+        // For external links, open in new tab with security attributes
+        if (isExternal) {
+          return (
+            <a
+              key={index}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {childElements}
+            </a>
+          )
+        }
+        
+        // For internal links, use Next.js Link for better performance
+        // But since we're in a server component context, we'll use regular <a> for now
         return (
           <a key={index} href={url} className="text-primary hover:underline">
             {childElements}
