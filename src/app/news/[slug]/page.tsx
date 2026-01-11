@@ -5,8 +5,8 @@ import { Calendar, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getTenant, getPostBySlug } from '@/lib/api'
-import { renderLexicalContent } from '@/lib/lexical'
 import { extractImageUrl } from '@/lib/imageUtils'
+import { RichTextRenderer } from '@/components/RichTextRenderer'
 import { notFound } from 'next/navigation'
 
 interface PostPageProps {
@@ -117,7 +117,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {post.content && (
               <div className="prose prose-lg max-w-none">
                 <div className="space-y-6">
-                  {renderLexicalContent(post.content)}
+                  <RichTextRenderer content={post.content} />
                 </div>
               </div>
             )}

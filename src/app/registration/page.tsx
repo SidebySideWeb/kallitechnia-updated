@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { MapPin, Phone, Mail, Clock, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { getTenant, getPageBySlug } from '@/lib/api'
-import { renderLexicalContent, extractText, extractParagraphs } from '@/lib/lexical'
+import { extractText, extractParagraphs } from '@/lib/lexical'
 import { normalizeImageUrl } from '@/lib/imageUtils'
 import { DownloadButton } from '@/components/DownloadButton'
+import { RichTextRenderer } from '@/components/RichTextRenderer'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -135,7 +136,7 @@ export default async function RegistrationPage() {
                 })
               ) : (
                 <div className="prose prose-lg max-w-none">
-                  {renderLexicalContent(welcomeContent)}
+                  <RichTextRenderer content={welcomeContent} />
                 </div>
               )}
             </div>
@@ -167,7 +168,7 @@ export default async function RegistrationPage() {
                       )}
                       {downloadButton.description && (
                         <div className="text-muted-foreground mb-4">
-                          {renderLexicalContent(downloadButton.description)}
+                          <RichTextRenderer content={downloadButton.description} />
                         </div>
                       )}
                       {downloadButton.fileUrl && (
@@ -199,7 +200,7 @@ export default async function RegistrationPage() {
                   {/* Fallback: Render full documents content if parsing didn't work */}
                   {documentsList.length === 0 && !downloadButton && (
                     <div className="prose prose-lg max-w-none">
-                      {renderLexicalContent(documentsContent)}
+                      <RichTextRenderer content={documentsContent} />
                     </div>
                   )}
                 </div>

@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { renderLexicalContent, type LexicalDocument, type LexicalNode } from '@/lib/lexical'
+import { RichText } from '@payloadcms/richtext-lexical/react'
+import type { LexicalDocument, LexicalNode } from '@/lib/lexical'
 
 /**
  * DESIGN-LOCKED Rich Text Section
@@ -30,12 +31,6 @@ export function KallitechniaRichText({ title, subtitle, content, _context }: Ric
     return null
   }
 
-  const renderedContent = renderLexicalContent(safeContent)
-
-  if (renderedContent.length === 0) {
-    return null
-  }
-
   // Reduce padding for first 5 sections on about page
   const isAboutPage = _context?.pageSlug === 'about'
   const isFirstFive = _context?.sectionIndex !== undefined && _context.sectionIndex < 5
@@ -56,8 +51,8 @@ export function KallitechniaRichText({ title, subtitle, content, _context }: Ric
               )}
             </div>
           )}
-          <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
-            {renderedContent}
+          <div className="space-y-6 text-lg leading-relaxed text-muted-foreground prose prose-lg max-w-none">
+            <RichText content={safeContent} />
           </div>
         </div>
       </div>
