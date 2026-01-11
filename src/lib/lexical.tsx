@@ -242,18 +242,32 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
         )
       case 'link':
         // Lexical link nodes in Payload CMS can have URL in various properties
-        // Check multiple possible locations for the URL
-        let url = rest.url || rest.href
+        // Payload CMS structure:
+        // - Internal document/media links: fields.doc.value.url
+        // - External links: fields.url or fields.href
+        let url: string | null = null
         
-        // Check nested fields structure (Payload CMS format)
-        if (!url && rest.fields) {
-          url = rest.fields.url || rest.fields.href || rest.fields.linkUrl
+        // Check for internal document/media link (Payload CMS format)
+        if (rest.fields?.doc?.value?.url) {
+          url = rest.fields.doc.value.url
+        }
+        // Check for external link URL
+        else if (rest.fields?.url) {
+          url = rest.fields.url
+        }
+        // Check for href in fields
+        else if (rest.fields?.href) {
+          url = rest.fields.href
+        }
+        // Check direct properties (fallback)
+        else if (rest.url || rest.href) {
+          url = rest.url || rest.href
         }
         
-        // Check direct properties that might contain the URL
-        if (!url) {
-          // Sometimes the URL might be in a different property name
-          url = rest.linkUrl || rest.link || rest.value
+        // Normalize relative URLs to absolute CMS URLs
+        if (url && typeof url === 'string' && url.startsWith('/api/media/')) {
+          const CMS_API_URL = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms.ftiaxesite.gr'
+          url = `${CMS_API_URL}${url}`
         }
         
         // Fallback to '#' if no URL found
