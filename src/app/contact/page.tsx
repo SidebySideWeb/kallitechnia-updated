@@ -13,6 +13,7 @@ import PageClient from '../PageClient'
  */
 export default async function ContactPage() {
   let sections: any[] = []
+  let contactInfo: any = null
 
   try {
     const tenant = await getTenant()
@@ -20,6 +21,11 @@ export default async function ContactPage() {
       const page = await getPageBySlug('contact', tenant.id)
       if (page) {
         sections = page.sections || []
+        
+        // Find ContactInfo section
+        contactInfo = sections.find(s => 
+          (s.blockType || s.block_type || s.type) === 'kallitechnia.contactInfo'
+        )
       }
     }
   } catch (error) {
@@ -30,6 +36,17 @@ export default async function ContactPage() {
   const formSections = sections.filter(s => 
     (s.blockType || s.block_type || s.type) === 'kallitechnia.form'
   )
+
+  // Extract contact info data from CMS
+  const getContactItem = (type: string) => {
+    if (!contactInfo?.items) return null
+    return contactInfo.items.find((item: any) => item.type === type)
+  }
+
+  const addressItem = getContactItem('address')
+  const phoneItem = getContactItem('phone')
+  const emailItem = getContactItem('email')
+  const hoursItem = getContactItem('hours')
 
   return (
     <div className="min-h-screen">
@@ -74,94 +91,106 @@ export default async function ContactPage() {
 
             {/* Contact Info */}
             <div className="space-y-6">
-              <Card className="border-2 rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MapPin className="h-6 w-6 text-primary" />
+              {/* Address */}
+              {addressItem && (
+                <Card className="border-2 rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-2 text-primary">
+                          {addressItem.label || 'Διεύθυνση'}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {addressItem.content}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-2 text-primary">Διεύθυνση</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Αργοστόλι
-                        <br />
-                        Κεφαλονιά, 28100
-                        <br />
-                        Ελλάδα
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card className="border-2 rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-6 w-6 text-secondary" />
+              {/* Phone */}
+              {phoneItem && (
+                <Card className="border-2 rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Phone className="h-6 w-6 text-secondary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-2 text-primary">
+                          {phoneItem.label || 'Τηλέφωνο'}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {phoneItem.content}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-2 text-primary">Τηλέφωνο</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        +30 123 456 7890
-                        <br />
-                        +30 098 765 4321
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card className="border-2 rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-6 w-6 text-accent" />
+              {/* Email */}
+              {emailItem && (
+                <Card className="border-2 rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Mail className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-2 text-primary">
+                          {emailItem.label || 'Email'}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {emailItem.content}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-2 text-primary">Email</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        info@kallitechnia-kefalonia.gr
-                        <br />
-                        contact@kallitechnia-kefalonia.gr
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card className="border-2 rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Clock className="h-6 w-6 text-primary" />
+              {/* Hours */}
+              {hoursItem && (
+                <Card className="border-2 rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Clock className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-2 text-primary">
+                          {hoursItem.label || 'Ώρες Λειτουργίας'}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {hoursItem.content}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-2 text-primary">Ώρες Λειτουργίας</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Δευτέρα - Παρασκευή: 16:00 - 21:00
-                        <br />
-                        Σάββατο: 10:00 - 14:00
-                        <br />
-                        Κυριακή: Κλειστά
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Other CMS Sections (non-form blocks) */}
-      {sections.filter(s => (s.blockType || s.block_type || s.type) !== 'kallitechnia.form').length > 0 ? (
+      {/* Other CMS Sections (non-form, non-contactInfo blocks) */}
+      {sections.filter(s => {
+        const blockType = s.blockType || s.block_type || s.type
+        return blockType !== 'kallitechnia.form' && blockType !== 'kallitechnia.contactInfo'
+      }).length > 0 ? (
         <main>
           <PageClient>
             <SafeSections
-              sections={sections.filter(s => 
-                (s.blockType || s.block_type || s.type) !== 'kallitechnia.form'
-              )}
+              sections={sections.filter(s => {
+                const blockType = s.blockType || s.block_type || s.type
+                return blockType !== 'kallitechnia.form' && blockType !== 'kallitechnia.contactInfo'
+              })}
               tenantCode="kallitechnia"
               context={{
                 pageSlug: 'contact',
