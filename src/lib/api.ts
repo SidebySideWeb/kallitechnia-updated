@@ -371,10 +371,7 @@ export async function getFormBySlug(slugOrId: string | number): Promise<Form | n
         `${CMS_API_URL}/api/forms/${slugOrIdStr}?depth=2&_t=${timestamp}`,
         {
           cache: 'no-store', // No caching for client components
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          },
+          // Removed Cache-Control headers to avoid CORS issues
         }
       )
     } else {
@@ -385,10 +382,7 @@ export async function getFormBySlug(slugOrId: string | number): Promise<Form | n
         `${CMS_API_URL}/api/forms?where[slug][equals]=${slugOrIdStr}&limit=1&depth=2&_t=${timestamp}`,
         {
           cache: 'no-store', // No caching for client components
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          },
+          // Removed Cache-Control headers to avoid CORS issues
         }
       )
 
@@ -405,10 +399,7 @@ export async function getFormBySlug(slugOrId: string | number): Promise<Form | n
         `${CMS_API_URL}/api/forms/${slugOrIdStr}?depth=2&_t=${timestamp}`,
         {
           cache: 'no-store', // No caching for client components
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          },
+          // Removed Cache-Control headers to avoid CORS issues
         }
       )
     }

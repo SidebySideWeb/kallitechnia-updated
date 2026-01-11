@@ -241,10 +241,31 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
           </li>
         )
       case 'link':
-        // Lexical link nodes can have URL in various properties
-        const url = rest.url || rest.href || rest.fields?.url || rest.fields?.href || '#'
-        const isExternal = url && (url.startsWith('http://') || url.startsWith('https://'))
-        const isInternal = url && url.startsWith('/')
+        // Lexical link nodes in Payload CMS can have URL in various properties
+        // Check multiple possible locations for the URL
+        let url = rest.url || rest.href
+        
+        // Check nested fields structure (Payload CMS format)
+        if (!url && rest.fields) {
+          url = rest.fields.url || rest.fields.href || rest.fields.linkUrl
+        }
+        
+        // Check direct properties that might contain the URL
+        if (!url) {
+          // Sometimes the URL might be in a different property name
+          url = rest.linkUrl || rest.link || rest.value
+        }
+        
+        // Fallback to '#' if no URL found
+        if (!url || typeof url !== 'string') {
+          url = '#'
+          // Debug in development
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('[Lexical] Link node without URL:', { type, rest, children })
+          }
+        }
+        
+        const isExternal = url && url !== '#' && (url.startsWith('http://') || url.startsWith('https://'))
         
         // For external links, open in new tab with security attributes
         if (isExternal) {
@@ -261,8 +282,7 @@ function renderLexicalNode(node: LexicalNode, index: number = 0): React.ReactNod
           )
         }
         
-        // For internal links, use Next.js Link for better performance
-        // But since we're in a server component context, we'll use regular <a> for now
+        // For internal links or relative links
         return (
           <a key={index} href={url} className="text-primary hover:underline">
             {childElements}
