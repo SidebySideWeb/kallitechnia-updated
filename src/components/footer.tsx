@@ -36,9 +36,9 @@ export function Footer({
   const safeLogo = logo || 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo%20KGK%20%CF%85%CF%88%CE%B7%CE%BB%CE%AE%CF%82%20%CE%B1%CE%BD%CE%AC%CE%BB%CF%85%CF%83%CE%B7%CF%82-YP2dWdAD9HKxgCBQOBLccXnxTydRcQ.png'
   const safeLogoAlt = logoAlt || 'Kallitechnia Gymnastics Kefalonia'
   const safeDescription = description || 'Σύλλογος Γυμναστικής Καλλιτεχνίας στην Κεφαλονιά. Προάγουμε την αθλητική αριστεία και την υγιή ανάπτυξη των παιδιών.'
-  const safeAddress = address || 'Αργοστόλι, Κεφαλονιά'
-  const safePhone = phone || '+30 123 456 7890'
-  const safeEmail = email || 'info@kallitechnia-kefalonia.gr'
+  const safeAddress = address || 'Σουηδίας 19, Αργοστόλι\nΚεφαλονιά, 28100\nΕλλάδα'
+  const safePhone = phone || '+306975844832'
+  const safeEmail = email || 'kallitechniagymnastics@gmail.com'
   const safeSocialLinks = Array.isArray(socialLinks) && socialLinks.length > 0 ? socialLinks : [
     { platform: 'facebook', url: 'https://www.facebook.com/share/1CrWN7pqCy/?mibextid=wwXIfr' },
     {
@@ -118,7 +118,7 @@ export function Footer({
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{safeAddress}</span>
+                <span className="text-sm whitespace-pre-line">{safeAddress}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-5 w-5 flex-shrink-0" />
