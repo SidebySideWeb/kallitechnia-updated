@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { MapPin, Phone, Mail, Clock, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { getTenant, getPageBySlug } from '@/lib/api'
-import { extractText, extractParagraphs } from '@/lib/lexical'
 import { normalizeImageUrl } from '@/lib/imageUtils'
 import { DownloadButton } from '@/components/DownloadButton'
 import { RichTextRenderer } from '@/components/RichTextRenderer'
@@ -87,22 +86,8 @@ export default async function RegistrationPage() {
   const emailItem = getContactItem('email')
   const hoursItem = getContactItem('hours')
 
-  // Extract welcome paragraphs
-  const welcomeParagraphs = welcomeContent ? extractParagraphs(welcomeContent) : []
-  const welcomeHeading = welcomeParagraphs.find(p => p.length > 50) || welcomeParagraphs[0] || ''
-  const welcomeSubheading = welcomeParagraphs.find((p, i) => i > 0 || (i === 0 && p !== welcomeHeading)) || ''
-
-  // Extract document paragraphs
-  const documentParagraphs = documentsContent ? extractParagraphs(documentsContent) : []
-  const documentHeading = documentParagraphs.find(p => p.includes('ΑΠΑΡΑΙΤΗΤΑ') || p.includes('ΕΓΓΡΑΦΑ')) || ''
-  const applicationText = documentParagraphs.find(p => p.includes('Αίτηση') || p.includes('αίτηση')) || ''
-  const documentsList = documentParagraphs.filter(p => 
-    p.startsWith('•') || 
-    p.includes('Ιατρική') || 
-    p.includes('Πιστοποιητικό') || 
-    p.includes('Φωτοτυπία') || 
-    p.includes('ΑΜΚΑ')
-  )
+  // Note: We're using RichTextRenderer directly instead of extractParagraphs
+  // to preserve links and formatting in the Lexical content
 
   return (
     <div className="min-h-screen">
@@ -116,29 +101,8 @@ export default async function RegistrationPage() {
       {welcomeContent && (
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              {welcomeParagraphs.length > 0 ? (
-                welcomeParagraphs.map((paragraph, index) => {
-                  // Check if it's a heading (usually first paragraph or contains specific text)
-                  const isHeading = index === 0 || paragraph.length < 100
-                  if (isHeading) {
-                    return (
-                      <p key={index} className="text-2xl md:text-3xl font-bold text-primary">
-                        {paragraph}
-                      </p>
-                    )
-                  }
-                  return (
-                    <p key={index} className="text-xl md:text-2xl text-secondary font-semibold">
-                      {paragraph}
-                    </p>
-                  )
-                })
-              ) : (
-                <div className="prose prose-lg max-w-none">
-                  <RichTextRenderer content={welcomeContent} />
-                </div>
-              )}
+            <div className="max-w-4xl mx-auto text-center space-y-6 prose prose-lg max-w-none">
+              <RichTextRenderer content={welcomeContent} />
             </div>
           </div>
         </section>
@@ -150,15 +114,6 @@ export default async function RegistrationPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="bg-card rounded-3xl p-8 md:p-12 shadow-lg border border-border">
-                {documentHeading && (
-                  <div className="flex items-center gap-3 mb-8">
-                    <FileText className="w-10 h-10 text-primary" />
-                    <h2 className="text-3xl md:text-4xl font-bold text-primary">
-                      {documentHeading}
-                    </h2>
-                  </div>
-                )}
-
                 <div className="space-y-6">
                   {/* Application Form Download */}
                   {downloadButton && (
@@ -182,23 +137,8 @@ export default async function RegistrationPage() {
                     </div>
                   )}
 
-                  {/* Required Documents List */}
-                  {documentsList.length > 0 && (
-                    <div className="bg-accent/5 rounded-xl p-6">
-                      <h3 className="text-xl font-bold text-primary mb-4">Δικαιολογητικά Εγγραφής</h3>
-                      <ul className="space-y-3 text-muted-foreground">
-                        {documentsList.map((item, index) => (
-                          <li key={index} className="flex items-start gap-3">
-                            <span className="text-primary font-bold mt-1">•</span>
-                            <span>{item.replace(/^•\s*/, '')}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Fallback: Render full documents content if parsing didn't work */}
-                  {documentsList.length === 0 && !downloadButton && (
+                  {/* Documents Content - Render with links preserved */}
+                  {documentsContent && (
                     <div className="prose prose-lg max-w-none">
                       <RichTextRenderer content={documentsContent} />
                     </div>
