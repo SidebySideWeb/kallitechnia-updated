@@ -2,11 +2,12 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { PageHeaderGradient } from '@/components/PageHeaderGradient'
 import { Button } from '@/components/ui/button'
-import { MapPin, Phone, Mail, Clock, FileText, Download } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { getTenant, getPageBySlug } from '@/lib/api'
 import { renderLexicalContent, extractText, extractParagraphs } from '@/lib/lexical'
 import { normalizeImageUrl } from '@/lib/imageUtils'
+import { DownloadButton } from '@/components/DownloadButton'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -170,17 +171,12 @@ export default async function RegistrationPage() {
                         </div>
                       )}
                       {downloadButton.fileUrl && (
-                        <Button className="bg-secondary hover:bg-secondary/90" asChild>
-                          <a 
-                            href={normalizeImageUrl(downloadButton.fileUrl) || downloadButton.fileUrl} 
-                            download={downloadButton.fileName}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            {downloadButton.buttonLabel || 'Κατέβασε την Αίτηση (PDF)'}
-                          </a>
-                        </Button>
+                        <DownloadButton
+                          fileUrl={normalizeImageUrl(downloadButton.fileUrl) || downloadButton.fileUrl}
+                          fileName={downloadButton.fileName}
+                          buttonLabel={downloadButton.buttonLabel || 'Κατέβασε την Αίτηση (PDF)'}
+                          className="bg-secondary hover:bg-secondary/90"
+                        />
                       )}
                     </div>
                   )}
