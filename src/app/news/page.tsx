@@ -1,7 +1,7 @@
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { PageHeaderGradient } from '@/components/PageHeaderGradient'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { getTenant, getPosts } from '@/lib/api'
@@ -64,10 +64,10 @@ export default async function NewsPage() {
               {newsItems.map((item, index) => (
                 <Link key={item.id || index} href={`/news/${item.slug}`}>
                   <Card
-                    className="border-2 hover:border-primary transition-all hover:shadow-lg rounded-2xl overflow-hidden animate-fade-in-up cursor-pointer h-full"
+                    className="border-2 hover:border-primary transition-all hover:shadow-lg rounded-2xl overflow-hidden animate-fade-in-up cursor-pointer h-full p-0"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className="relative h-64">
+                    <div className="relative h-64 rounded-t-2xl overflow-hidden">
                       <Image
                         src={item.image || '/placeholder.svg'}
                         alt={item.title}
@@ -77,19 +77,23 @@ export default async function NewsPage() {
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </div>
-                    <CardHeader>
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>{item.date}</span>
-                      </div>
-                      <CardTitle className="text-2xl text-balance">
-                        {item.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {item.excerpt}
-                      </p>
+                    <CardContent className="p-6">
+                      {item.date && (
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
+                          <Calendar className="h-4 w-4" />
+                          <span>{item.date}</span>
+                        </div>
+                      )}
+                      {item.title && (
+                        <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                      )}
+                      {item.excerpt && (
+                        <p className="text-muted-foreground leading-relaxed">
+                          {item.excerpt}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 </Link>
