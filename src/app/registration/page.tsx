@@ -8,6 +8,7 @@ import { getTenant, getPageBySlug } from '@/lib/api'
 import { renderLexicalContent, extractText, extractParagraphs } from '@/lib/lexical'
 import { normalizeImageUrl } from '@/lib/imageUtils'
 import { DownloadButton } from '@/components/DownloadButton'
+import { renderContactText } from '@/lib/contactUtils'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -240,7 +241,7 @@ export default async function RegistrationPage() {
                     </div>
                     <h3 className="font-bold text-lg mb-2">{phoneItem.label || 'Τηλέφωνο'}</h3>
                     <p className="text-muted-foreground whitespace-pre-line">
-                      {phoneItem.content}
+                      {renderContactText(phoneItem.content)}
                     </p>
                   </div>
                 )}
@@ -253,7 +254,7 @@ export default async function RegistrationPage() {
                     </div>
                     <h3 className="font-bold text-lg mb-2">{emailItem.label || 'Email'}</h3>
                     <p className="text-muted-foreground whitespace-pre-line">
-                      {emailItem.content}
+                      {renderContactText(emailItem.content)}
                     </p>
                   </div>
                 )}

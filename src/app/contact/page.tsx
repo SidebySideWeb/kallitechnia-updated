@@ -4,6 +4,7 @@ import { PageHeaderGradient } from '@/components/PageHeaderGradient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { getTenant, getPageBySlug } from '@/lib/api'
+import { renderContactText } from '@/lib/contactUtils'
 import SafeSections from '@/lib/SafeSections'
 import PageClient from '../PageClient'
 
@@ -125,7 +126,7 @@ export default async function ContactPage() {
                           {phoneItem.label || 'Τηλέφωνο'}
                         </h3>
                         <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {phoneItem.content}
+                          {renderContactText(phoneItem.content)}
                         </p>
                       </div>
                     </div>
@@ -146,7 +147,7 @@ export default async function ContactPage() {
                           {emailItem.label || 'Email'}
                         </h3>
                         <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {emailItem.content}
+                          {renderContactText(emailItem.content)}
                         </p>
                       </div>
                     </div>
